@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-brand-blue: #3056D3; /* Darwin Blue */
+  --color-brand-dark: #111827;
+  --color-brand-gray: #F3F4F6;
+  --color-surface-bg: #FFFFFF;
+  --color-surface-card: #FFFFFF;
+  
+  --font-sans: "Inter", "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  
+  --shadow-darwin: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-darwin-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+:root {
+  background-color: var(--color-surface-bg);
+  color: var(--color-brand-dark);
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.card-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
