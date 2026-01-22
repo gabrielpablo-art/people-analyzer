@@ -25,8 +25,12 @@ export default function DashboardApp() {
         setTimeout(() => setShowToast(false), 3000);
     };
 
-    const handleAddEmployee = (newEmp) => {
-        setEmployees([...employees, newEmp]);
+    const handleAddEmployee = (newEmpOrEmps) => {
+        if (Array.isArray(newEmpOrEmps)) {
+            setEmployees([...employees, ...newEmpOrEmps]);
+        } else {
+            setEmployees([...employees, newEmpOrEmps]);
+        }
     };
 
     // Configuration Handlers

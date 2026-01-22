@@ -100,6 +100,35 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* How it Works Section */}
+            <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-50"></div>
+                <div className="max-w-7xl mx-auto px-6 relative z-10">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">From data to decision in 4 steps</h2>
+                        <p className="text-gray-500 text-lg max-w-2xl mx-auto">
+                            Automate the EOS People Analyzer™ process and get back to growing your business.
+                        </p>
+                    </div>
+
+                    <div className="grid md:grid-cols-4 gap-8">
+                        {[
+                            { title: "Set Standards", desc: "Define Core Values and GWC roles for your organization.", step: "01" },
+                            { title: "Sync Team", desc: "Import employees or invite them to self-assess.", step: "02" },
+                            { title: "Analyze", desc: "Visualize talent on the 9-Box Grid automatically.", step: "03" },
+                            { title: "Take Action", desc: "Generate coaching plans for 'Wrong Seat' issues.", step: "04" }
+                        ].map((item, i) => (
+                            <div key={i} className="relative group">
+                                <div className="text-6xl font-black text-gray-100 mb-4 group-hover:text-blue-50 transition-colors select-none">{item.step}</div>
+                                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+                                <p className="text-gray-500 leading-relaxed">{item.desc}</p>
+                                {i < 3 && <div className="hidden md:block absolute top-8 right-0 w-8 h-[2px] bg-gray-100 translate-x-1/2"></div>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* Features Section */}
             <section id="features" className="py-24 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-6">
@@ -124,6 +153,90 @@ export default function LandingPage() {
                             title="Quarterly Pulses"
                             description="Automate 5-5-5 conversations and keep a record of every coaching session."
                         />
+                    </div>
+                </div>
+            </section>
+
+            {/* Pricing Section */}
+            <section id="pricing" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="text-center mb-16">
+                        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
+                        <p className="text-gray-500 text-lg">Start free, scale as your team grows.</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                        {/* Starter */}
+                        <Card className="p-8 border border-gray-100 hover:border-brand-blue/30 transition-all hover:shadow-darwin-lg relative bg-white">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Starter</h3>
+                            <p className="text-gray-500 text-sm mb-6">For small teams getting started.</p>
+                            <div className="flex items-baseline mb-6">
+                                <span className="text-4xl font-extrabold text-gray-900">$50</span>
+                                <span className="text-gray-500 ml-2">/month</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Up to 10 Employees
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Core Values Assessment
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Basic GWC Analysis
+                                </li>
+                            </ul>
+                            <Button variant="outline" className="w-full">Start Free Trial</Button>
+                        </Card>
+
+                        {/* Growth */}
+                        <Card className="p-8 border-2 border-brand-blue shadow-darwin-lg relative transform md:-translate-y-4 bg-white">
+                            <div className="absolute top-0 right-0 bg-brand-blue text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Growth</h3>
+                            <p className="text-gray-500 text-sm mb-6">For expanding organizations.</p>
+                            <div className="flex items-baseline mb-6">
+                                <span className="text-4xl font-extrabold text-gray-900">$150</span>
+                                <span className="text-gray-500 ml-2">/month</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Up to 50 Employees
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Historical Trending
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Advanced Filtering
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Email Support
+                                </li>
+                            </ul>
+                            <Button variant="primary" className="w-full shadow-lg shadow-blue-500/20">Get Started</Button>
+                        </Card>
+
+                        {/* Business */}
+                        <Card className="p-8 border border-gray-100 hover:border-brand-blue/30 transition-all hover:shadow-darwin-lg bg-white">
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Business</h3>
+                            <p className="text-gray-500 text-sm mb-6">For established companies.</p>
+                            <div className="flex items-baseline mb-6">
+                                <span className="text-4xl font-extrabold text-gray-900">Custom</span>
+                            </div>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Unlimited Employees
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Dedicated Success Manager
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> API Access
+                                </li>
+                                <li className="flex items-center gap-3 text-sm text-gray-600">
+                                    <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> SSO / SAML
+                                </li>
+                            </ul>
+                            <Button variant="outline" className="w-full">Contact Sales</Button>
+                        </Card>
                     </div>
                 </div>
             </section>

@@ -1,33 +1,63 @@
 import React, { useState } from 'react';
 import { Card } from './Card';
-import { Plus, Mail, ChevronRight, X } from 'lucide-react';
+import { Plus, Mail, ChevronRight, X, Upload } from 'lucide-react';
 
 export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [mode, setMode] = useState('single'); // 'single' | 'bulk'
+    const [bulkData, setBulkData] = useState('');
     const [newEmployee, setNewEmployee] = useState({
         name: '',
         lastName: '',
+        email: '',
         role: '',
         manager: '',
     });
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Create full name and initial data
-        const fullName = `${newEmployee.name} ${newEmployee.lastName}`.trim();
 
-        onAddEmployee({
-            ...newEmployee,
-            name: fullName,
-            // Initialize with empty/default ratings
-            values: coreValues.map(() => '+'), // Defaulting to + for now
-            gwc: ['Y', 'Y', 'Y'],
-            status: 'Ready',
-            rating: 'The Right Person' // Default rating
-        });
+        if (mode === 'single') {
+            const fullName = `${newEmployee.name} ${newEmployee.lastName}`.trim();
+            onAddEmployee({
+                ...newEmployee,
+                name: fullName,
+                values: coreValues.map(() => '+'),
+                gwc: ['Y', 'Y', 'Y'],
+                status: 'Ready',
+                rating: 'The Right Person'
+            });
+            // Show toast simulation
+            alert(`Invitation sent to ${newEmployee.email}`);
+        } else {
+            // Parse Bulk Data
+            const lines = bulkData.trim().split('\n');
+            const newEmployees = lines.map(line => {
+                const [firstName, lastName, email, role, manager] = line.split(',').map(s => s.trim());
+                if (!firstName || !lastName || !email) return null;
+
+                return {
+                    name: `${firstName} ${lastName}`,
+                    email,
+                    role: role || 'TBD',
+                    manager: manager || 'TBD',
+                    values: coreValues.map(() => '+'),
+                    gwc: ['Y', 'Y', 'Y'],
+                    status: 'Ready',
+                    rating: 'The Right Person'
+                };
+            }).filter(Boolean);
+
+            if (newEmployees.length > 0) {
+                onAddEmployee(newEmployees);
+                alert(`Invitations sent to ${newEmployees.length} employees`);
+            }
+        }
 
         setIsModalOpen(false);
-        setNewEmployee({ name: '', lastName: '', role: '', manager: '' });
+        setNewEmployee({ name: '', lastName: '', email: '', role: '', manager: '' });
+        setBulkData('');
+        setMode('single');
     };
 
     return (
@@ -101,58 +131,105 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-in fade-in duration-200">
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-lg font-bold text-gray-900">Add New Employee</h3>
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Add New Employee</h3>
+                                <div className="flex gap-4 mt-2 text-sm">
+                                    <button
+                                        className={`pb-1 ${mode === 'single' ? 'text-brand-blue border-b-2 border-brand-blue font-semibold' : 'text-gray-500'}`}
+                                        onClick={() => setMode('single')}
+                                    >
+                                        Single
+                                    </button>
+                                    <button
+                                        className={`pb-1 ${mode === 'bulk' ? 'text-brand-blue border-b-2 border-brand-blue font-semibold' : 'text-gray-500'}`}
+                                        onClick={() => setMode('bulk')}
+                                    >
+                                        Bulk Import
+                                    </button>
+                                </div>
+                            </div>
                             <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
                                 <X size={20} />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
-                                        value={newEmployee.name}
-                                        onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                                    <input
-                                        required
-                                        type="text"
-                                        className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
-                                        value={newEmployee.lastName}
-                                        onChange={e => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
-                                    />
-                                </div>
-                            </div>
+                            {mode === 'single' ? (
+                                <>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
+                                                value={newEmployee.name}
+                                                onChange={e => setNewEmployee({ ...newEmployee, name: e.target.value })}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                            <input
+                                                required
+                                                type="text"
+                                                className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
+                                                value={newEmployee.lastName}
+                                                onChange={e => setNewEmployee({ ...newEmployee, lastName: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Role / Position</label>
-                                <input
-                                    required
-                                    type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
-                                    value={newEmployee.role}
-                                    onChange={e => setNewEmployee({ ...newEmployee, role: e.target.value })}
-                                />
-                            </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                        <input
+                                            required
+                                            type="email"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
+                                            value={newEmployee.email}
+                                            onChange={e => setNewEmployee({ ...newEmployee, email: e.target.value })}
+                                        />
+                                    </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Manager</label>
-                                <input
-                                    required
-                                    type="text"
-                                    className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
-                                    placeholder="e.g. John Doe"
-                                    value={newEmployee.manager}
-                                    onChange={e => setNewEmployee({ ...newEmployee, manager: e.target.value })}
-                                />
-                            </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Role / Position</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
+                                            value={newEmployee.role}
+                                            onChange={e => setNewEmployee({ ...newEmployee, role: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">Manager</label>
+                                        <input
+                                            required
+                                            type="text"
+                                            className="w-full px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue"
+                                            placeholder="e.g. John Doe"
+                                            value={newEmployee.manager}
+                                            onChange={e => setNewEmployee({ ...newEmployee, manager: e.target.value })}
+                                        />
+                                    </div>
+                                </>
+                            ) : (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        CSV Data (First Name, Last Name, Email, Role, Manager)
+                                    </label>
+                                    <textarea
+                                        className="w-full h-40 px-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue font-mono"
+                                        placeholder={`John, Doe, john@example.com, Developer, Jane Smith\nAlice, Wonderland, alice@example.com, Designer, Bob Builder`}
+                                        value={bulkData}
+                                        onChange={e => setBulkData(e.target.value)}
+                                        required
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Paste your employee list here. One employee per line.
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="pt-4 flex justify-end gap-3">
                                 <button
@@ -166,7 +243,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                     type="submit"
                                     className="px-6 py-2 bg-brand-blue text-white text-sm font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-brand-blue/20 transition-colors"
                                 >
-                                    Add Employee
+                                    {mode === 'single' ? 'Send Invitation' : 'Import Employees'}
                                 </button>
                             </div>
                         </form>
