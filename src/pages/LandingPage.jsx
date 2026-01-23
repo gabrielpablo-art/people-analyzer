@@ -100,6 +100,21 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Trusted By Section */}
+            <section className="py-10 border-b border-gray-100 bg-white">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <p className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-8">Trusted by innovative teams worldwide</p>
+                    <div className="flex flex-wrap justify-center items-center gap-12 md:gap-20 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+                        {/* Placeholder Logos */}
+                        <div className="text-2xl font-bold text-gray-900 flex items-center gap-2"><div className="w-8 h-8 bg-gray-900 rounded-lg"></div>ACME Corp</div>
+                        <div className="text-2xl font-bold text-gray-900 flex items-center gap-2"><div className="w-8 h-8 bg-blue-600 rounded-full"></div>GlobalTech</div>
+                        <div className="text-2xl font-bold text-gray-900 flex items-center gap-2"><div className="w-8 h-8 border-4 border-gray-900 rounded-sm"></div>Nebula</div>
+                        <div className="text-2xl font-bold text-gray-900 flex items-center gap-2"><div className="w-8 h-8 bg-purple-600 rotate-45 rounded-sm"></div>Vortex</div>
+                        <div className="text-2xl font-bold text-gray-900 flex items-center gap-2"><div className="w-8 h-8 bg-green-500 rounded-tr-xl rounded-bl-xl"></div>EcoSystems</div>
+                    </div>
+                </div>
+            </section>
+
             {/* How it Works Section */}
             <section id="how-it-works" className="py-24 bg-white relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-blue-50 via-transparent to-transparent opacity-50"></div>
