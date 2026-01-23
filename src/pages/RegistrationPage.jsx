@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, CheckCircle, ArrowRight, User, Building, Target, Check, ChevronLeft, Layout as LayoutIcon, MessageSquare, Code, FileText, PenTool, BarChart, AlertCircle } from 'lucide-react';
+import { Mail, CheckCircle, ArrowRight, User, Building, Target, Check, ChevronLeft, Layout as LayoutIcon, MessageSquare, Code, FileText, PenTool, BarChart, AlertCircle, Users, ShieldCheck, Zap, Activity } from 'lucide-react';
 import { authService } from '../services/authService';
 
 export default function RegistrationPage() {
@@ -24,13 +24,13 @@ export default function RegistrationPage() {
     ];
 
     const GOAL_OPTIONS = [
-        { id: 'values', label: 'Analyze Core Values', icon: <Target size={14} /> },
-        { id: 'org', label: 'Build Org Chart', icon: <LayoutIcon size={14} /> },
-        { id: 'perf', label: 'Track Performance', icon: <BarChart size={14} /> },
-        { id: 'feedback', label: 'Team Feedback', icon: <MessageSquare size={14} /> },
-        { id: 'coding', label: 'Optimize Coding Flow', icon: <Code size={14} /> },
-        { id: 'docs', label: 'Draft Documentation', icon: <FileText size={14} /> },
-        { id: 'notes', label: 'Personal Notes', icon: <PenTool size={14} /> },
+        { id: 'values', label: 'Analyze Core Values', icon: <ShieldCheck size={14} /> },
+        { id: 'gwc', label: 'Evaluate GWC Alignment', icon: <Target size={14} /> },
+        { id: 'org', label: 'Define Accountability', icon: <LayoutIcon size={14} /> },
+        { id: 'perf', label: 'Quarterly Performance', icon: <BarChart size={14} /> },
+        { id: 'feedback', label: '360° Team Feedback', icon: <Users size={14} /> },
+        { id: 'capacity', label: 'Optimize Capacity', icon: <Zap size={14} /> },
+        { id: 'health', label: 'Organizational Health', icon: <Activity size={14} /> },
         { id: 'other', label: 'Something else', icon: <Check size={14} /> }
     ];
 
@@ -254,8 +254,8 @@ export default function RegistrationPage() {
                         {currentStep === 4 && (
                             <div className="space-y-8">
                                 <div>
-                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Where do you spend time typing?</h1>
-                                    <p className="text-gray-500 text-sm">This helps us personalize Flow where you work. Select all that apply.</p>
+                                    <h1 className="text-3xl font-bold text-gray-900 mb-2">What are your people goals?</h1>
+                                    <p className="text-gray-500 text-sm">This helps us tailor the People Analyzer to your organization's needs. Select all that apply.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
