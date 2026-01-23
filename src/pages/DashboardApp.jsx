@@ -1,157 +1,175 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { DashboardView } from '../components/DashboardView';
 import { EvaluationView } from '../components/EvaluationView';
 import { AdminView } from '../components/AdminView';
 import { ConfigurationView } from '../components/ConfigurationView';
 import { AccountabilityChartView } from '../components/AccountabilityChartView';
+import { QuestionEditor } from '../components/QuestionEditor';
+import { PersonReport } from '../components/PersonReport';
 import { Mail } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
+import { useEmployees, useSettings, useEvaluations } from '../hooks/useFirestore';
+import { authService } from '../services/authService';
 
 export default function DashboardApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showToast, setShowToast] = useState(false);
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const [selectedPerson, setSelectedPerson] = useState(null);
+    const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('currentUser') || '{}'));
 
-    // Centralized State
-    const [coreValues, setCoreValues] = useState(['Humble', 'Hungry', 'Smart', 'Compass', 'Transp']);
+    // Firebase Hooks
+    const { employees, loading: employeesLoading, addEmployee, updateEmployee } = useEmployees();
+    const { settings, loading: settingsLoading, updateSettings } = useSettings();
+    const { createEvaluation } = useEvaluations();
 
-    // Organizational Roles State
-    const [organizationalRoles, setOrganizationalRoles] = useState(() => {
-        const saved = localStorage.getItem('organizationalRoles');
-        if (saved) {
-            return JSON.parse(saved);
-        }
-        return {
-            predefined: {
-                'C-Suite': ['CEO', 'CTO', 'CFO', 'COO'],
-                'Directors': [
-                    'Director of Technology',
-                    'Director of Finance',
-                    'Director of Operations',
-                    'Director of HR'
-                ],
-                'Analysts': [
-                    'Technology Analyst',
-                    'Finance Analyst',
-                    'Operations Analyst',
-                    'HR Analyst'
-                ]
-            },
-            custom: []
-        };
-    });
+    useEffect(() => {
+        const unsubscribe = authService.onAuthStateChange((userData) => {
+            if (userData) {
+                setCurrentUser(userData);
+            } else {
+                window.location.href = '/login';
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
-    const [employees, setEmployees] = useState([
-        {
-            name: 'Juan Perez',
-            email: 'juan@company.com',
-            role: 'CTO',
-            manager: 'CEO',
-            status: 'Ready',
-            values: ['+', '+', '+', '±', '+'],
-            gwc: ['Y', 'Y', 'Y'],
-            rating: 'Right Employee',
-            photo: null,
-            responsibilities: ['Technology Strategy', 'Product Development', 'IT Infrastructure', 'Technical Hiring']
+    const coreValues = settings?.coreValues || ['Humble', 'Hungry', 'Smart', 'Compass', 'Transp'];
+    const organizationalRoles = settings?.organizationalRoles || {
+        predefined: {
+            'C-Suite': ['CEO', 'CTO', 'CFO', 'COO'],
+            'Directors': ['Director of Technology', 'Director of Finance', 'Director of Operations', 'Director of HR'],
+            'Analysts': ['Technology Analyst', 'Finance Analyst', 'Operations Analyst', 'HR Analyst']
         },
-        {
-            name: 'Maria Gomez',
-            email: 'maria@company.com',
-            role: 'HR Manager',
-            manager: 'CEO',
-            status: 'In Review',
-            values: ['+', '±', '+', '+', '±'],
-            gwc: ['Y', 'Y', 'Y'],
-            rating: 'Right Employee',
-            photo: null,
-            responsibilities: ['Talent Acquisition', 'Employee Engagement', 'Payroll & Benefits', 'Compliance']
-        },
-        {
-            name: 'Carlos Ruiz',
-            email: 'carlos@company.com',
-            role: 'Dev Lead',
-            manager: 'Juan Perez',
-            status: 'Waiting',
-            values: ['+', '+', '-', '±', '+'],
-            gwc: ['Y', 'Y', 'N'],
-            rating: 'Wrong Seat',
-            photo: null,
-            responsibilities: ['Team Coordination', 'Code Review', 'Backend Architecture', 'Sprint Planning']
-        },
-        {
-            name: 'Ana Lopez',
-            email: 'ana@company.com',
-            role: 'Designer',
-            manager: 'Juan Perez',
-            status: 'Waiting',
-            values: ['±', '-', '±', '±', '-'],
-            gwc: ['Y', 'N', 'Y'],
-            rating: 'Wrong Person',
-            photo: null,
-            responsibilities: ['UI/UX Design', 'Design Systems', 'Brand Identity', 'User Research']
-        },
-    ]);
+        custom: []
+    };
 
     const handleLaunch = () => {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 3000);
     };
 
-    const handleAddEmployee = (newEmpOrEmps) => {
-        if (Array.isArray(newEmpOrEmps)) {
-            setEmployees([...employees, ...newEmpOrEmps]);
-        } else {
-            setEmployees([...employees, newEmpOrEmps]);
+    const handleAddEmployee = async (newEmpOrEmps) => {
+        try {
+            if (Array.isArray(newEmpOrEmps)) {
+                for (const emp of newEmpOrEmps) {
+                    await addEmployee(emp);
+                }
+            } else {
+                await addEmployee(newEmpOrEmps);
+            }
+        } catch (err) {
+            console.error('Error adding employee:', err);
         }
     };
 
-    const handleUpdateEmployee = (name, updates) => {
-        setEmployees(employees.map(emp =>
-            emp.name === name ? { ...emp, ...updates } : emp
-        ));
+    const handleUpdateEmployee = async (employeeId, updates) => {
+        try {
+            await updateEmployee(employeeId, updates);
+        } catch (err) {
+            console.error('Error updating employee:', err);
+        }
     };
 
     // Configuration Handlers
-    const addCoreValue = (val) => setCoreValues([...coreValues, val]);
-    const removeCoreValue = (index) => setCoreValues(coreValues.filter((_, i) => i !== index));
+    const addCoreValue = (val) => {
+        const updated = [...coreValues, val];
+        updateSettings({ coreValues: updated });
+    };
+
+    const removeCoreValue = (index) => {
+        const updated = coreValues.filter((_, i) => i !== index);
+        updateSettings({ coreValues: updated });
+    };
+
     const updateCoreValue = (index, newVal) => {
         const updated = [...coreValues];
         updated[index] = newVal;
-        setCoreValues(updated);
+        updateSettings({ coreValues: updated });
     };
 
-    // Organizational Roles Handlers
     const addCustomRole = (roleName) => {
-        const updated = {
+        const updatedRoles = {
             ...organizationalRoles,
             custom: [...organizationalRoles.custom, roleName]
         };
-        setOrganizationalRoles(updated);
-        localStorage.setItem('organizationalRoles', JSON.stringify(updated));
+        updateSettings({ organizationalRoles: updatedRoles });
     };
 
     const removeCustomRole = (index) => {
-        const updated = {
+        const updatedRoles = {
             ...organizationalRoles,
             custom: organizationalRoles.custom.filter((_, i) => i !== index)
         };
-        setOrganizationalRoles(updated);
-        localStorage.setItem('organizationalRoles', JSON.stringify(updated));
+        updateSettings({ organizationalRoles: updatedRoles });
     };
 
-    const getAllRoles = () => {
-        const predefinedRoles = Object.values(organizationalRoles.predefined).flat();
-        return [...predefinedRoles, ...organizationalRoles.custom];
+    if (employeesLoading || settingsLoading) {
+        return (
+            <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-12 h-12 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
+                    <p className="text-gray-500 font-medium">Loading your dashboard...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const [personToEvaluate, setPersonToEvaluate] = useState(null);
+
+    const handleEvaluationSubmit = async (evalData) => {
+        try {
+            await createEvaluation({
+                employeeId: personToEvaluate.id || personToEvaluate.email,
+                evaluatorId: currentUser.uid,
+                organizationId: currentUser.organizationId || 'default',
+                ...evalData,
+                status: 'completed',
+                submittedAt: new Date().toISOString()
+            });
+
+            setShowToast(true);
+            setTimeout(() => setShowToast(false), 3000);
+            setPersonToEvaluate(null);
+            setActiveTab('dashboard');
+        } catch (err) {
+            console.error('Error submitting evaluation:', err);
+        }
     };
+
+    const [evaluationsForReport, setEvaluationsForReport] = useState([]);
+    const { getEvaluationsForEmployee } = useEvaluations();
+
+    useEffect(() => {
+        if (selectedPerson) {
+            getEvaluationsForEmployee(selectedPerson.id || selectedPerson.email)
+                .then(setEvaluationsForReport)
+                .catch(err => console.error('Error fetching evaluations:', err));
+        }
+    }, [selectedPerson]);
 
     return (
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
-            {activeTab === 'dashboard' && (
+            {activeTab === 'dashboard' && !selectedPerson && (
                 <DashboardView
                     employees={employees}
                     coreValues={coreValues}
                     currentUser={currentUser}
+                    onViewReport={(person) => setSelectedPerson(person)}
+                    onEvaluate={(person) => {
+                        setPersonToEvaluate(person);
+                        setActiveTab('evaluation');
+                    }}
+                />
+            )}
+
+            {activeTab === 'dashboard' && selectedPerson && (
+                <PersonReport
+                    person={selectedPerson}
+                    evaluations={evaluationsForReport}
+                    coreValues={coreValues}
+                    questions={settings?.questions || []}
+                    onBack={() => setSelectedPerson(null)}
                 />
             )}
 
@@ -167,7 +185,16 @@ export default function DashboardApp() {
             )}
 
             {activeTab === 'evaluation' && (
-                <EvaluationView onBack={() => setActiveTab('dashboard')} />
+                <EvaluationView
+                    employee={personToEvaluate}
+                    coreValues={coreValues}
+                    questions={settings?.questions || []}
+                    onBack={() => {
+                        setPersonToEvaluate(null);
+                        setActiveTab('dashboard');
+                    }}
+                    onSubmit={handleEvaluationSubmit}
+                />
             )}
 
             {activeTab === 'accountability' && hasPermission(currentUser, PERMISSIONS.MANAGE_ACCOUNTABILITY_CHART) && (
@@ -178,16 +205,22 @@ export default function DashboardApp() {
             )}
 
             {activeTab === 'settings' && hasPermission(currentUser, PERMISSIONS.MANAGE_CORE_VALUES) && (
-                <ConfigurationView
-                    coreValues={coreValues}
-                    onAddValue={addCoreValue}
-                    onRemoveValue={removeCoreValue}
-                    onUpdateValue={updateCoreValue}
-                    currentUser={currentUser}
-                    organizationalRoles={organizationalRoles}
-                    onAddCustomRole={addCustomRole}
-                    onRemoveCustomRole={removeCustomRole}
-                />
+                <div className="space-y-6">
+                    <ConfigurationView
+                        coreValues={coreValues}
+                        onAddValue={addCoreValue}
+                        onRemoveValue={removeCoreValue}
+                        onUpdateValue={updateCoreValue}
+                        currentUser={currentUser}
+                        organizationalRoles={organizationalRoles}
+                        onAddCustomRole={addCustomRole}
+                        onRemoveCustomRole={removeCustomRole}
+                    />
+                    <QuestionEditor
+                        questions={settings?.questions || []}
+                        onUpdate={(updatedQuestions) => updateSettings({ questions: updatedQuestions })}
+                    />
+                </div>
             )}
 
             {/* Toast Notification */}

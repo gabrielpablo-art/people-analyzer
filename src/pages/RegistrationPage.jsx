@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, CheckCircle, ArrowRight, User, Building, Target, Check, ChevronLeft, Layout as LayoutIcon, MessageSquare, Code, FileText, PenTool, BarChart } from 'lucide-react';
+import { Mail, CheckCircle, ArrowRight, User, Building, Target, Check, ChevronLeft, Layout as LayoutIcon, MessageSquare, Code, FileText, PenTool, BarChart, AlertCircle } from 'lucide-react';
+import { authService } from '../services/authService';
 
 export default function RegistrationPage() {
     const navigate = useNavigate();
@@ -50,31 +51,28 @@ export default function RegistrationPage() {
         handleNext();
     };
 
-    const handleCompleteSetup = () => {
-        // Build user object
-        const newUser = {
-            id: Date.now().toString(),
-            name: formData.fullName || 'New User',
-            email: formData.email,
-            password: formData.password || 'social_auth',
-            role: 'owner',
-            company: formData.companyName,
-            industry: formData.industry,
-            goals: formData.goals,
-            onboardingCompleted: true,
-            status: 'active',
-            trialStartDate: new Date().toISOString(),
-            trialDaysLeft: 14
-        };
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState(null);
 
-        // Save to localStorage
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
+    const handleCompleteSetup = async () => {
+        setIsSubmitting(true);
+        setError(null);
+        try {
+            await authService.register(formData.email, formData.password, {
+                displayName: formData.fullName,
+                role: 'owner',
+                companyName: formData.companyName,
+                industry: formData.industry,
+                goals: formData.goals
+            });
 
-        setCurrentStep(5);
-        setTimeout(() => navigate('/app'), 2000);
+            setCurrentStep(5);
+            setTimeout(() => navigate('/app'), 2000);
+        } catch (err) {
+            console.error('Registration error:', err);
+            setError(err.message || 'An error occurred during registration.');
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -278,12 +276,20 @@ export default function RegistrationPage() {
                                     ))}
                                 </div>
 
+                                {error && (
+                                    <div className="p-3 bg-red-50 text-red-600 text-xs rounded-xl flex items-center gap-2">
+                                        <AlertCircle size={14} />
+                                        {error}
+                                    </div>
+                                )}
+
                                 <button
                                     onClick={handleCompleteSetup}
-                                    className="w-full py-4 bg-brand-blue text-white rounded-2xl text-sm font-bold shadow-xl shadow-brand-blue/20 hover:bg-blue-600 transition-all flex items-center justify-center gap-2 group"
+                                    disabled={isSubmitting}
+                                    className="w-full py-4 bg-brand-blue text-white rounded-2xl text-sm font-bold shadow-xl shadow-brand-blue/20 hover:bg-blue-600 transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
                                 >
-                                    Finish Setup
-                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                    {isSubmitting ? 'Setting up...' : 'Finish Setup'}
+                                    {!isSubmitting && <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />}
                                 </button>
                             </div>
                         )}

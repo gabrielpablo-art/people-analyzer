@@ -65,7 +65,7 @@ const AccountabilityChartTree = ({ node, isFirst, isLast, hasSiblings, isRoot = 
     const handleManagerChange = (e) => {
         const newManager = e.target.value;
         if (onUpdateEmployee) {
-            onUpdateEmployee(node.name, { manager: newManager });
+            onUpdateEmployee(node.id, { manager: newManager });
         }
         setIsEditingManager(false);
     };
@@ -79,16 +79,16 @@ const AccountabilityChartTree = ({ node, isFirst, isLast, hasSiblings, isRoot = 
         if (file && onUpdateEmployee) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                onUpdateEmployee(node.name, { photo: reader.result });
+                onUpdateEmployee(node.id, { photo: reader.result });
             };
             reader.readAsDataURL(file);
         }
-    };
+    }
 
     const handleResponsibilitiesChange = (e) => {
         const newResponsibilities = e.target.value.split('\n').filter(r => r.trim() !== '');
         if (onUpdateEmployee) {
-            onUpdateEmployee(node.name, { responsibilities: newResponsibilities });
+            onUpdateEmployee(node.id, { responsibilities: newResponsibilities });
         }
     };
     return (

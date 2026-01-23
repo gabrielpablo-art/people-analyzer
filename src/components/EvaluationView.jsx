@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Card } from './Card';
 import { ArrowLeft, Check, UserCircle } from 'lucide-react';
 
-export const EvaluationView = ({ onBack, onSubmit, coreValues = ['Humble', 'Hungry', 'Smart'] }) => {
-    // Mock data - in real app would come from props/context
-    const employee = { name: "Juan Perez", role: "Peer", initials: "JP" };
+export const EvaluationView = ({ onBack, onSubmit, employee, coreValues = ['Humble', 'Hungry', 'Smart'], questions = [] }) => {
     const [evalData, setEvalData] = useState({
         values: {},
         gwc: {},
+        questions: {},
         feedback: ''
     });
+
+    const initials = employee?.name ? employee.name.split(' ').map(n => n[0]).join('') : '?';
 
     const handleValueChange = (val, score) => {
         setEvalData(prev => ({ ...prev, values: { ...prev.values, [val]: score } }));
@@ -32,7 +33,7 @@ export const EvaluationView = ({ onBack, onSubmit, coreValues = ['Humble', 'Hung
             <header className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-brand-blue rounded-full flex items-center justify-center text-white text-xl font-bold">
-                        {employee.initials}
+                        {initials}
                     </div>
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900">Evaluating {employee.name}</h2>
@@ -72,8 +73,8 @@ export const EvaluationView = ({ onBack, onSubmit, coreValues = ['Humble', 'Hung
                                             key={score}
                                             onClick={() => handleValueChange(val, score)}
                                             className={`w-10 h-10 rounded-lg font-bold text-lg border transition-all ${evalData.values[val] === score
-                                                    ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/30 scale-110'
-                                                    : 'bg-white text-gray-300 border-gray-200 hover:border-gray-300'
+                                                ? 'bg-brand-blue text-white border-brand-blue shadow-lg shadow-brand-blue/30 scale-110'
+                                                : 'bg-white text-gray-300 border-gray-200 hover:border-gray-300'
                                                 }`}
                                         >
                                             {score}
@@ -99,12 +100,16 @@ export const EvaluationView = ({ onBack, onSubmit, coreValues = ['Humble', 'Hung
                             <div key={item.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-colors">
                                 <span className="font-bold text-gray-700">{item.label}</span>
                                 <div className="flex gap-3">
-                                    {['Yes', 'No'].map((opt) => (
+                                    {['Y', 'N'].map((opt) => (
                                         <button
                                             key={opt}
-                                            className="px-6 py-2 rounded-lg font-bold text-sm border bg-white text-gray-400 border-gray-200 hover:border-gray-300 focus:ring-2 focus:ring-brand-blue focus:text-brand-blue"
+                                            onClick={() => setEvalData(prev => ({ ...prev, gwc: { ...prev.gwc, [item.id]: opt } }))}
+                                            className={`px-6 py-2 rounded-lg font-bold text-sm border transition-all ${evalData.gwc[item.id] === opt
+                                                ? 'bg-brand-blue text-white border-brand-blue'
+                                                : 'bg-white text-gray-400 border-gray-200 hover:border-gray-300'
+                                                }`}
                                         >
-                                            {opt}
+                                            {opt === 'Y' ? 'Yes' : 'No'}
                                         </button>
                                     ))}
                                 </div>
@@ -113,13 +118,43 @@ export const EvaluationView = ({ onBack, onSubmit, coreValues = ['Humble', 'Hung
                     </div>
                 </Card>
 
+                {/* Open-Ended Questions Section */}
+                {questions.length > 0 && (
+                    <Card>
+                        <div className="border-b border-gray-100 pb-4 mb-6">
+                            <h3 className="text-lg font-bold text-gray-900">Additional Feedback</h3>
+                            <p className="text-sm text-gray-500">
+                                Please answer the following questions to help {employee?.name} grow.
+                            </p>
+                        </div>
+                        <div className="space-y-6">
+                            {questions.map((q) => (
+                                <div key={q.id} className="space-y-2">
+                                    <label className="block">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{q.category}</span>
+                                        <p className="text-sm font-semibold text-gray-700 mt-1 mb-2">{q.text}</p>
+                                    </label>
+                                    <textarea
+                                        className="w-full h-24 p-4 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue focus:ring-2 focus:ring-brand-blue/10 resize-none"
+                                        placeholder="Your response..."
+                                        value={evalData.questions?.[q.id] || ''}
+                                        onChange={(e) => setEvalData(prev => ({
+                                            ...prev,
+                                            questions: { ...prev.questions, [q.id]: e.target.value }
+                                        }))}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                )}
+
                 {/* Feedback Section */}
                 <Card>
                     <div className="border-b border-gray-100 pb-4 mb-6">
-                        <h3 className="text-lg font-bold text-gray-900">Performance Feedback</h3>
+                        <h3 className="text-lg font-bold text-gray-900">General Comments (Optional)</h3>
                         <p className="text-sm text-gray-500">
-                            Please provide constructive feedback about {employee.name}'s performance.
-                            This will be synthesized for their manager.
+                            Any additional feedback about {employee.name}'s performance.
                         </p>
                     </div>
                     <textarea

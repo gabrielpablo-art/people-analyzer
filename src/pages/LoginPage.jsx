@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
+import { authService } from '../services/authService';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -8,42 +9,23 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
 
-        const usersJSON = localStorage.getItem('users');
-        let users = [];
-        if (usersJSON) {
-            users = JSON.parse(usersJSON);
-        }
-
-        // Also check legacy single user for backward compatibility
-        const legacyUserJSON = localStorage.getItem('currentUser');
-        let legacyUser = null;
-        if (legacyUserJSON) {
-            legacyUser = JSON.parse(legacyUserJSON);
-        }
-
-        const foundUser = users.find(u => u.email === email && u.password === password) ||
-            (legacyUser && legacyUser.email === email && legacyUser.password === password ? legacyUser : null);
-
-        if (foundUser) {
-            // Success
-            localStorage.setItem('currentUser', JSON.stringify(foundUser));
+        try {
+            await authService.login(email, password);
             navigate('/app');
-            return;
-        } else {
-            // Check if email exists but wrong password
-            const emailExists = users.some(u => u.email === email) || (legacyUser && legacyUser.email === email);
-
-            if (emailExists) {
-                setError('Invalid password.');
+        } catch (err) {
+            console.error('Login error:', err);
+            if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                setError('Invalid email or password.');
+            } else if (err.code === 'auth/invalid-email') {
+                setError('Invalid email format.');
             } else {
-                handleUnregistered();
+                setError('An error occurred during login. Please try again.');
             }
         }
-
     };
 
     const handleUnregistered = () => {

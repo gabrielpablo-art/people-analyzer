@@ -4,7 +4,7 @@ import { Target, Users, TrendingUp, AlertCircle } from 'lucide-react';
 import { EmployeeDetailModal } from './EmployeeDetailModal';
 import { hasPermission, PERMISSIONS, isEmployee } from '../utils/permissions';
 
-export const DashboardView = ({ employees, coreValues, currentUser }) => {
+export const DashboardView = ({ employees, coreValues, currentUser, onViewReport, onEvaluate }) => {
     const [filterRating, setFilterRating] = useState('ALL'); // ALL, RIGHT_PERSON, WRONG_SEAT, WRONG_PERSON
     const [selectedEmployee, setSelectedEmployee] = useState(null);
 
@@ -132,6 +132,7 @@ export const DashboardView = ({ employees, coreValues, currentUser }) => {
                                 <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">W</th>
                                 <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">C</th>
                                 <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Rating Final</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-50">
@@ -162,11 +163,37 @@ export const DashboardView = ({ employees, coreValues, currentUser }) => {
                                                 {p.rating}
                                             </span>
                                         </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                {onEvaluate && !isEmployee(currentUser) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onEvaluate(p);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-brand-green/10 text-brand-green rounded-lg text-xs font-bold hover:bg-brand-green hover:text-white transition-all"
+                                                    >
+                                                        Evaluate
+                                                    </button>
+                                                )}
+                                                {onViewReport && !isEmployee(currentUser) && (
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            onViewReport(p);
+                                                        }}
+                                                        className="px-3 py-1.5 bg-brand-blue/10 text-brand-blue rounded-lg text-xs font-bold hover:bg-brand-blue hover:text-white transition-all"
+                                                    >
+                                                        View Report
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={coreValues.length + 5} className="px-6 py-8 text-center text-gray-500 text-sm">
+                                    <td colSpan={coreValues.length + 6} className="px-6 py-8 text-center text-gray-500 text-sm">
                                         No employees found matching this filter.
                                     </td>
                                 </tr>
@@ -180,6 +207,7 @@ export const DashboardView = ({ employees, coreValues, currentUser }) => {
                                 <td className="px-4 py-4 text-center font-bold text-brand-blue/50 text-sm">Y</td>
                                 <td className="px-4 py-4 text-center font-bold text-brand-blue/50 text-sm">Y</td>
                                 <td className="px-4 py-4 text-center font-bold text-brand-blue/50 text-sm">Y</td>
+                                <td className="px-6 py-4"></td>
                                 <td className="px-6 py-4"></td>
                             </tr>
                         </tbody>

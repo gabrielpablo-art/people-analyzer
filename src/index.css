@@ -2,16 +2,33 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-blue: #3056D3; /* Darwin Blue */
+  --color-brand-blue: #3056D3;
+  /* Darwin Blue */
+  --color-brand-green: #10B981;
+  --color-brand-amber: #F59E0B;
   --color-brand-dark: #111827;
   --color-brand-gray: #F3F4F6;
-  --color-surface-bg: #FFFFFF;
+  --color-surface-bg: #F8F9FA;
   --color-surface-card: #FFFFFF;
-  
-  --font-sans: "Inter", "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  
-  --shadow-darwin: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-darwin-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-darwin: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-darwin-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  --animate-scale-in: scale-in 0.2s ease-out;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 :root {
