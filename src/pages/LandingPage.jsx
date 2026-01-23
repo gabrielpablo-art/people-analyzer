@@ -185,7 +185,9 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Basic GWC Analysis
                                 </li>
                             </ul>
-                            <Button variant="outline" className="w-full">Start Free Trial</Button>
+                            <Link to="/checkout?plan=starter">
+                                <Button variant="outline" className="w-full">Start Free Trial</Button>
+                            </Link>
                         </Card>
 
                         {/* Growth */}
@@ -211,7 +213,9 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Email Support
                                 </li>
                             </ul>
-                            <Button variant="primary" className="w-full shadow-lg shadow-blue-500/20">Get Started</Button>
+                            <Link to="/checkout?plan=growth">
+                                <Button variant="primary" className="w-full shadow-lg shadow-blue-500/20">Get Started</Button>
+                            </Link>
                         </Card>
 
                         {/* Business */}
@@ -235,7 +239,7 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> SSO / SAML
                                 </li>
                             </ul>
-                            <Button variant="outline" className="w-full">Contact Sales</Button>
+                            <Button variant="outline" className="w-full" onClick={() => window.location.href = 'mailto:sales@peopleanalyzer.ai'}>Contact Sales</Button>
                         </Card>
                     </div>
                 </div>
