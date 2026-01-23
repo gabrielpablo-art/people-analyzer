@@ -70,9 +70,9 @@ export default function LandingPage() {
                         <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue to-purple-500 rounded-2xl blur opacity-20"></div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
                             <img
-                                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop"
+                                src="/assets/dashboard-preview.png"
                                 alt="Dashboard Preview"
-                                className="w-full h-auto object-cover opacity-90"
+                                className="w-full h-auto object-cover opacity-90 shadow-2xl rounded-2xl"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent flex items-center justify-center">
                                 <div className="bg-white/90 backdrop-blur shadow-darwin-lg border border-white/50 p-6 rounded-2xl max-w-sm text-left transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
@@ -119,7 +119,7 @@ export default function LandingPage() {
                             { title: "Take Action", desc: "Generate coaching plans for 'Wrong Seat' issues.", step: "04" }
                         ].map((item, i) => (
                             <div key={i} className="relative group">
-                                <div className="text-6xl font-black text-gray-100 mb-4 group-hover:text-blue-50 transition-colors select-none">{item.step}</div>
+                                <div className="text-6xl font-black text-brand-blue/20 mb-4 group-hover:text-brand-blue/40 transition-colors select-none">{item.step}</div>
                                 <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
                                 <p className="text-gray-500 leading-relaxed">{item.desc}</p>
                                 {i < 3 && <div className="hidden md:block absolute top-8 right-0 w-8 h-[2px] bg-gray-100 translate-x-1/2"></div>}
