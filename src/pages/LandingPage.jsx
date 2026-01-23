@@ -70,7 +70,7 @@ export default function LandingPage() {
                         <div className="absolute -inset-1 bg-gradient-to-r from-brand-blue to-purple-500 rounded-2xl blur opacity-20"></div>
                         <div className="relative rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white">
                             <img
-                                src="/assets/dashboard-preview.png"
+                                src="/assets/dashboard-screenshot.png"
                                 alt="Dashboard Preview"
                                 className="w-full h-auto object-cover opacity-90 shadow-2xl rounded-2xl"
                             />
