@@ -22,7 +22,7 @@ export default function LandingPage() {
                         <a href="#pricing" className="hover:text-brand-blue transition-colors">Pricing</a>
                     </div>
                     <div className="flex items-center gap-4">
-                        <Link to="/app">
+                        <Link to="/login">
                             <Button variant="ghost" size="sm">Log In</Button>
                         </Link>
                         <Link to="/app">

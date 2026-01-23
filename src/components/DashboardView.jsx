@@ -1,31 +1,43 @@
 import React, { useState, useMemo } from 'react';
 import { Card } from './Card';
 import { Target, Users, TrendingUp, AlertCircle } from 'lucide-react';
+import { EmployeeDetailModal } from './EmployeeDetailModal';
+import { hasPermission, PERMISSIONS, isEmployee } from '../utils/permissions';
 
-export const DashboardView = ({ employees, coreValues }) => {
+export const DashboardView = ({ employees, coreValues, currentUser }) => {
     const [filterRating, setFilterRating] = useState('ALL'); // ALL, RIGHT_PERSON, WRONG_SEAT, WRONG_PERSON
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
 
     // Calculate Stats
     const stats = useMemo(() => {
-        const total = employees.length;
-        const rightPerson = employees.filter(e => e.rating === 'The Right Person').length;
-        const wrongSeat = employees.filter(e => e.rating === 'Wrong Seat').length;
-        const wrongPerson = employees.filter(e => e.rating === 'Wrong Person').length;
+        const visibleEmployees = isEmployee(currentUser)
+            ? employees.filter(e => e.email === currentUser.email)
+            : employees;
+
+        const total = visibleEmployees.length;
+        const rightPerson = visibleEmployees.filter(e => e.rating === 'Right Employee').length;
+        const wrongSeat = visibleEmployees.filter(e => e.rating === 'Wrong Seat').length;
+        const wrongPerson = visibleEmployees.filter(e => e.rating === 'Wrong Person').length;
 
         return { total, rightPerson, wrongSeat, wrongPerson };
-    }, [employees]);
+    }, [employees, currentUser]);
 
     // Filter Employees
     const filteredEmployees = useMemo(() => {
-        if (filterRating === 'ALL') return employees;
-        if (filterRating === 'RIGHT_PERSON') return employees.filter(e => e.rating === 'The Right Person');
-        if (filterRating === 'WRONG_SEAT') return employees.filter(e => e.rating === 'Wrong Seat');
-        if (filterRating === 'WRONG_PERSON') return employees.filter(e => e.rating === 'Wrong Person');
-        return employees;
-    }, [employees, filterRating]);
+        let baseList = employees;
+        if (isEmployee(currentUser)) {
+            baseList = employees.filter(e => e.email === currentUser.email);
+        }
+
+        if (filterRating === 'ALL') return baseList;
+        if (filterRating === 'RIGHT_PERSON') return baseList.filter(e => e.rating === 'Right Employee');
+        if (filterRating === 'WRONG_SEAT') return baseList.filter(e => e.rating === 'Wrong Seat');
+        if (filterRating === 'WRONG_PERSON') return baseList.filter(e => e.rating === 'Wrong Person');
+        return baseList;
+    }, [employees, filterRating, currentUser]);
 
     const getRatingColor = (rating) => {
-        if (rating === 'The Right Person') return 'text-brand-green bg-green-50';
+        if (rating === 'Right Employee') return 'text-brand-green bg-green-50';
         if (rating === 'Wrong Seat') return 'text-amber-600 bg-amber-50';
         return 'text-red-600 bg-red-50';
     };
@@ -125,14 +137,19 @@ export const DashboardView = ({ employees, coreValues }) => {
                         <tbody className="divide-y divide-gray-50">
                             {filteredEmployees.length > 0 ? (
                                 filteredEmployees.map((p, i) => (
-                                    <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                                    <tr
+                                        key={i}
+                                        onClick={() => setSelectedEmployee(p)}
+                                        className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
+                                    >
                                         <td className="px-6 py-4">
-                                            <span className="font-bold text-sm text-gray-900">{p.name}</span>
+                                            <span className="font-bold text-sm text-gray-900 group-hover:text-brand-blue transition-colors">
+                                                {p.name}
+                                            </span>
                                         </td>
                                         {p.values.slice(0, coreValues.length).map((v, idx) => (
                                             <td key={idx} className={`px-4 py-4 text-center font-bold text-lg ${getValColor(v)}`}>{v}</td>
                                         ))}
-                                        {/* Fill missing values if coreValues length increased visually (handled by slice usually but just in case) */}
                                         {Array.from({ length: Math.max(0, coreValues.length - p.values.length) }).map((_, idx) => (
                                             <td key={`empty-${idx}`} className="px-4 py-4 text-center text-gray-300">-</td>
                                         ))}
@@ -169,6 +186,14 @@ export const DashboardView = ({ employees, coreValues }) => {
                     </table>
                 </div>
             </Card>
+
+            {/* Employee Detail Modal */}
+            {selectedEmployee && (
+                <EmployeeDetailModal
+                    employee={selectedEmployee}
+                    onClose={() => setSelectedEmployee(null)}
+                />
+            )}
         </div>
     );
 };

@@ -4,20 +4,93 @@ import { DashboardView } from '../components/DashboardView';
 import { EvaluationView } from '../components/EvaluationView';
 import { AdminView } from '../components/AdminView';
 import { ConfigurationView } from '../components/ConfigurationView';
+import { AccountabilityChartView } from '../components/AccountabilityChartView';
 import { Mail } from 'lucide-react';
+import { hasPermission, PERMISSIONS } from '../utils/permissions';
 
 export default function DashboardApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showToast, setShowToast] = useState(false);
+    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
 
     // Centralized State
     const [coreValues, setCoreValues] = useState(['Humble', 'Hungry', 'Smart', 'Compass', 'Transp']);
 
+    // Organizational Roles State
+    const [organizationalRoles, setOrganizationalRoles] = useState(() => {
+        const saved = localStorage.getItem('organizationalRoles');
+        if (saved) {
+            return JSON.parse(saved);
+        }
+        return {
+            predefined: {
+                'C-Suite': ['CEO', 'CTO', 'CFO', 'COO'],
+                'Directors': [
+                    'Director of Technology',
+                    'Director of Finance',
+                    'Director of Operations',
+                    'Director of HR'
+                ],
+                'Analysts': [
+                    'Technology Analyst',
+                    'Finance Analyst',
+                    'Operations Analyst',
+                    'HR Analyst'
+                ]
+            },
+            custom: []
+        };
+    });
+
     const [employees, setEmployees] = useState([
-        { name: 'Juan Perez', role: 'CTO', manager: 'CEO', status: 'Ready', values: ['+', '+', '+', '±', '+'], gwc: ['Y', 'Y', 'Y'], rating: 'The Right Person' },
-        { name: 'Maria Gomez', role: 'HR Manager', manager: 'CEO', status: 'In Review', values: ['+', '±', '+', '+', '±'], gwc: ['Y', 'Y', 'Y'], rating: 'The Right Person' },
-        { name: 'Carlos Ruiz', role: 'Dev Lead', manager: 'CTO', status: 'Waiting', values: ['+', '+', '-', '±', '+'], gwc: ['Y', 'Y', 'N'], rating: 'Wrong Seat' },
-        { name: 'Ana Lopez', role: 'Designer', manager: 'CTO', status: 'Waiting', values: ['±', '-', '±', '±', '-'], gwc: ['Y', 'N', 'Y'], rating: 'Wrong Person' },
+        {
+            name: 'Juan Perez',
+            email: 'juan@company.com',
+            role: 'CTO',
+            manager: 'CEO',
+            status: 'Ready',
+            values: ['+', '+', '+', '±', '+'],
+            gwc: ['Y', 'Y', 'Y'],
+            rating: 'Right Employee',
+            photo: null,
+            responsibilities: ['Technology Strategy', 'Product Development', 'IT Infrastructure', 'Technical Hiring']
+        },
+        {
+            name: 'Maria Gomez',
+            email: 'maria@company.com',
+            role: 'HR Manager',
+            manager: 'CEO',
+            status: 'In Review',
+            values: ['+', '±', '+', '+', '±'],
+            gwc: ['Y', 'Y', 'Y'],
+            rating: 'Right Employee',
+            photo: null,
+            responsibilities: ['Talent Acquisition', 'Employee Engagement', 'Payroll & Benefits', 'Compliance']
+        },
+        {
+            name: 'Carlos Ruiz',
+            email: 'carlos@company.com',
+            role: 'Dev Lead',
+            manager: 'Juan Perez',
+            status: 'Waiting',
+            values: ['+', '+', '-', '±', '+'],
+            gwc: ['Y', 'Y', 'N'],
+            rating: 'Wrong Seat',
+            photo: null,
+            responsibilities: ['Team Coordination', 'Code Review', 'Backend Architecture', 'Sprint Planning']
+        },
+        {
+            name: 'Ana Lopez',
+            email: 'ana@company.com',
+            role: 'Designer',
+            manager: 'Juan Perez',
+            status: 'Waiting',
+            values: ['±', '-', '±', '±', '-'],
+            gwc: ['Y', 'N', 'Y'],
+            rating: 'Wrong Person',
+            photo: null,
+            responsibilities: ['UI/UX Design', 'Design Systems', 'Brand Identity', 'User Research']
+        },
     ]);
 
     const handleLaunch = () => {
@@ -33,6 +106,12 @@ export default function DashboardApp() {
         }
     };
 
+    const handleUpdateEmployee = (name, updates) => {
+        setEmployees(employees.map(emp =>
+            emp.name === name ? { ...emp, ...updates } : emp
+        ));
+    };
+
     // Configuration Handlers
     const addCoreValue = (val) => setCoreValues([...coreValues, val]);
     const removeCoreValue = (index) => setCoreValues(coreValues.filter((_, i) => i !== index));
@@ -42,21 +121,48 @@ export default function DashboardApp() {
         setCoreValues(updated);
     };
 
+    // Organizational Roles Handlers
+    const addCustomRole = (roleName) => {
+        const updated = {
+            ...organizationalRoles,
+            custom: [...organizationalRoles.custom, roleName]
+        };
+        setOrganizationalRoles(updated);
+        localStorage.setItem('organizationalRoles', JSON.stringify(updated));
+    };
+
+    const removeCustomRole = (index) => {
+        const updated = {
+            ...organizationalRoles,
+            custom: organizationalRoles.custom.filter((_, i) => i !== index)
+        };
+        setOrganizationalRoles(updated);
+        localStorage.setItem('organizationalRoles', JSON.stringify(updated));
+    };
+
+    const getAllRoles = () => {
+        const predefinedRoles = Object.values(organizationalRoles.predefined).flat();
+        return [...predefinedRoles, ...organizationalRoles.custom];
+    };
+
     return (
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
             {activeTab === 'dashboard' && (
                 <DashboardView
                     employees={employees}
                     coreValues={coreValues}
+                    currentUser={currentUser}
                 />
             )}
 
-            {activeTab === 'admin' && (
+            {activeTab === 'admin' && hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) && (
                 <AdminView
                     employees={employees}
                     onAddEmployee={handleAddEmployee}
                     onLaunch={handleLaunch}
                     coreValues={coreValues}
+                    organizationalRoles={organizationalRoles}
+                    onAddCustomRole={addCustomRole}
                 />
             )}
 
@@ -64,12 +170,23 @@ export default function DashboardApp() {
                 <EvaluationView onBack={() => setActiveTab('dashboard')} />
             )}
 
-            {activeTab === 'settings' && (
+            {activeTab === 'accountability' && hasPermission(currentUser, PERMISSIONS.MANAGE_ACCOUNTABILITY_CHART) && (
+                <AccountabilityChartView
+                    employees={employees}
+                    onUpdateEmployee={handleUpdateEmployee}
+                />
+            )}
+
+            {activeTab === 'settings' && hasPermission(currentUser, PERMISSIONS.MANAGE_CORE_VALUES) && (
                 <ConfigurationView
                     coreValues={coreValues}
                     onAddValue={addCoreValue}
                     onRemoveValue={removeCoreValue}
                     onUpdateValue={updateCoreValue}
+                    currentUser={currentUser}
+                    organizationalRoles={organizationalRoles}
+                    onAddCustomRole={addCustomRole}
+                    onRemoveCustomRole={removeCustomRole}
                 />
             )}
 

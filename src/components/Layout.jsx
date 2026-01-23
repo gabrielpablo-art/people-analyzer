@@ -10,7 +10,9 @@ export const Layout = ({ activeTab, onTabChange, children }) => {
                 <header className="mb-10 flex items-center justify-between">
                     <div>
                         <h2 className="text-2xl font-bold text-gray-900 capitalize">
-                            {activeTab === 'admin' ? 'RRHH Management' : activeTab}
+                            {activeTab === 'admin' ? 'RRHH Management' :
+                                activeTab === 'accountability' ? 'Accountability Chart' :
+                                    activeTab}
                         </h2>
                         <p className="text-gray-500 text-sm mt-1">
                             {activeTab === 'dashboard' && 'Overview of your team performance and EOS bar.'}
