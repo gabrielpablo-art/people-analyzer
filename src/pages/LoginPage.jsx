@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import Logo from '../components/ui/Logo';
 import { Mail, Lock, ArrowRight, AlertCircle } from 'lucide-react';
 import { authService } from '../services/authService';
 
@@ -45,8 +46,8 @@ export default function LoginPage() {
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4 font-sans">
             <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
                 <div className="text-center mb-8">
-                    <div className="w-12 h-12 bg-blue-50 text-brand-blue rounded-xl flex items-center justify-center mx-auto mb-4">
-                        <Lock size={24} />
+                    <div className="flex justify-center mb-6">
+                        <Logo iconSize="w-12 h-12" textSize="text-2xl" />
                     </div>
                     <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
                     <p className="text-gray-500 mt-2 text-sm">Log in to your People Analyzer account</p>

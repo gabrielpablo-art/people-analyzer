@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from '../components/ui/Logo';
 import { Button } from '../components/ui/Button';
 import { Card, CardContent } from '../components/ui/Card';
 import { Bot, CheckCircle, TrendingUp, Users, ArrowRight, ShieldCheck } from 'lucide-react';
@@ -10,12 +11,9 @@ export default function LandingPage() {
             {/* Navbar */}
             <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center">
-                            <Bot className="text-white w-5 h-5" />
-                        </div>
-                        <span className="font-bold text-lg tracking-tight">PeopleAnalyzer<span className="text-brand-blue">.ai</span></span>
-                    </div>
+                    <Link to="/">
+                        <Logo iconSize="w-8 h-8" textSize="text-xl" />
+                    </Link>
                     <div className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
                         <a href="#features" className="hover:text-brand-blue transition-colors">Product</a>
                         <a href="#how-it-works" className="hover:text-brand-blue transition-colors">How it Works</a>
@@ -263,10 +261,9 @@ export default function LandingPage() {
             {/* Footer */}
             <footer className="bg-white border-t border-gray-100 py-12 px-6">
                 <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <Bot className="text-brand-blue w-6 h-6" />
-                        <span className="font-bold text-gray-900">PeopleAnalyzer.ai</span>
-                    </div>
+                    <Link to="/">
+                        <Logo iconSize="w-6 h-6" textSize="text-base" />
+                    </Link>
                     <div className="text-sm text-gray-500">
                         © 2026 People Analyzer. All rights reserved.
                     </div>

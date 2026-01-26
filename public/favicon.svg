@@ -1,0 +1,35 @@
+<svg 
+  viewBox="0 0 100 100" 
+  fill="none" 
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <circle 
+    cx="55" 
+    cy="45" 
+    r="32" 
+    stroke="#3056D3" 
+    strokeWidth="8"
+  />
+  <line 
+    x1="32" 
+    y1="68" 
+    x2="12" 
+    y2="88" 
+    stroke="#3056D3" 
+    strokeWidth="10" 
+    strokeLinecap="round"
+  />
+  <circle 
+    cx="55" 
+    cy="38" 
+    r="9" 
+    stroke="#3056D3" 
+    strokeWidth="6"
+  />
+  <path 
+    d="M38 58C38 52 45 48 55 48C65 48 72 52 72 58" 
+    stroke="#3056D3" 
+    strokeWidth="6" 
+    strokeLinecap="round"
+  />
+</svg>

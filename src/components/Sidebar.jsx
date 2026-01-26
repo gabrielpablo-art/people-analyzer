@@ -9,6 +9,7 @@ import {
     Network
 } from 'lucide-react';
 import logo from '../assets/logo.png';
+import Logo from './ui/Logo';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
 
 const NavItem = ({ icon: Icon, label, active, onClick }) => (
@@ -40,7 +41,7 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-100 flex flex-col p-6 z-30">
             <div className="flex items-center gap-3 mb-10 px-2">
-                <img src={logo} alt="Incluyeme" className="h-20 object-contain" />
+                <Logo iconSize="w-8 h-8" textSize="text-lg" />
             </div>
 
             <nav className="flex-1 space-y-2">

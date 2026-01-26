@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { User, Lock, Camera, Save, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '../components/ui/Button'; // Assuming Button component exists based on other files
-import { Card } from '../components/ui/Card';     // Assuming Card component exists
+import Logo from '../components/ui/Logo';
+import { User, Lock, Camera, Save, ArrowLeft } from 'lucide-react';
+import { Button } from '../components/ui/Button';
+import { Card } from '../components/ui/Card';
 
 export default function ProfilePage() {
     const [name, setName] = useState('');
@@ -51,10 +52,13 @@ export default function ProfilePage() {
     return (
         <div className="min-h-screen bg-gray-50 p-6 font-sans">
             <div className="max-w-2xl mx-auto">
-                <div className="mb-6">
-                    <Link to="/app" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors mb-4">
-                        <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
-                    </Link>
+                <div className="mb-6 flex flex-col items-center sm:items-start">
+                    <div className="w-full flex justify-between items-center mb-6">
+                        <Link to="/app" className="inline-flex items-center text-gray-500 hover:text-gray-900 transition-colors">
+                            <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
+                        </Link>
+                        <Logo iconSize="w-6 h-6" textSize="text-base" />
+                    </div>
                     <h1 className="text-3xl font-bold text-gray-900">Profile Settings</h1>
                     <p className="text-gray-500">Manage your account details and preferences.</p>
                 </div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import Logo from '../components/ui/Logo';
 import { Mail, CheckCircle, ArrowRight, User, Building, Target, Check, ChevronLeft, Layout as LayoutIcon, MessageSquare, Code, FileText, PenTool, BarChart, AlertCircle, Users, ShieldCheck, Zap, Activity } from 'lucide-react';
 import { authService } from '../services/authService';
 
@@ -82,11 +83,9 @@ export default function RegistrationPage() {
                 {/* Header / Progress Bar */}
                 <div className="px-8 py-6 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md z-10">
                     <div className="flex items-center gap-8">
-                        <div className="flex gap-1.5">
-                            <div className="w-2 h-2 rounded-full bg-red-400" />
-                            <div className="w-2 h-2 rounded-full bg-amber-400" />
-                            <div className="w-2 h-2 rounded-full bg-green-400" />
-                        </div>
+                        <Link to="/">
+                            <Logo iconSize="w-6 h-6" textSize="text-sm font-bold" />
+                        </Link>
                         <div className="hidden sm:flex items-center gap-6">
                             {steps.map((s) => (
                                 <div key={s.id} className="flex items-center gap-2">

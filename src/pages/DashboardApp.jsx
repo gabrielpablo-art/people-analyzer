@@ -7,6 +7,7 @@ import { ConfigurationView } from '../components/ConfigurationView';
 import { AccountabilityChartView } from '../components/AccountabilityChartView';
 import { QuestionEditor } from '../components/QuestionEditor';
 import { PersonReport } from '../components/PersonReport';
+import Logo from '../components/ui/Logo';
 import { Mail } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
 import { useEmployees, useSettings, useEvaluations } from '../hooks/useFirestore';
@@ -107,9 +108,12 @@ export default function DashboardApp() {
     if (employeesLoading || settingsLoading) {
         return (
             <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
-                <div className="flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-                    <p className="text-gray-500 font-medium">Loading your dashboard...</p>
+                <div className="flex flex-col items-center gap-6">
+                    <Logo iconSize="w-16 h-16" textSize="text-3xl" />
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
+                        <p className="text-gray-500 font-medium">Loading your dashboard...</p>
+                    </div>
                 </div>
             </div>
         );
