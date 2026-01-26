@@ -7,6 +7,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import LoginPage from './pages/LoginPage';
 import ProfilePage from './pages/ProfilePage';
 import SuperAdminPage from './pages/SuperAdminPage';
+import ResourcesPage from './pages/ResourcesPage';
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/app" element={<DashboardApp />} />
+        <Route path="/resources" element={<ResourcesPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/super-admin-restricted-access" element={<SuperAdminPage />} />
         {/* Fallback route */}

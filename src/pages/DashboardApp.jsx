@@ -12,6 +12,8 @@ import { Mail } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
 import { useEmployees, useSettings, useEvaluations } from '../hooks/useFirestore';
 import { authService } from '../services/authService';
+import { ResourcesView } from '../components/ResourcesView';
+import { FeedbackView } from '../components/FeedbackView';
 
 export default function DashboardApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -188,6 +190,13 @@ export default function DashboardApp() {
                 />
             )}
 
+            {activeTab === 'feedback' && (
+                <FeedbackView
+                    employees={employees}
+                    currentUser={currentUser}
+                />
+            )}
+
             {activeTab === 'evaluation' && (
                 <EvaluationView
                     employee={personToEvaluate}
@@ -206,6 +215,10 @@ export default function DashboardApp() {
                     employees={employees}
                     onUpdateEmployee={handleUpdateEmployee}
                 />
+            )}
+
+            {activeTab === 'resources' && (
+                <ResourcesView />
             )}
 
             {activeTab === 'settings' && hasPermission(currentUser, PERMISSIONS.MANAGE_CORE_VALUES) && (

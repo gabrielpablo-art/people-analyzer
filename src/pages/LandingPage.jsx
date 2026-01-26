@@ -18,6 +18,7 @@ export default function LandingPage() {
                         <a href="#features" className="hover:text-brand-blue transition-colors">Product</a>
                         <a href="#how-it-works" className="hover:text-brand-blue transition-colors">How it Works</a>
                         <a href="#pricing" className="hover:text-brand-blue transition-colors">Pricing</a>
+                        <Link to="/resources" className="hover:text-brand-blue transition-colors">Resources</Link>
                     </div>
                     <div className="flex items-center gap-4">
                         <Link to="/login">
@@ -170,8 +171,60 @@ export default function LandingPage() {
                 </div>
             </section>
 
+            {/* Resources Preview Section */}
+            <section id="resources" className="py-24 bg-white">
+                <div className="max-w-7xl mx-auto px-6">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                        <div className="max-w-2xl">
+                            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Latest from our Resources</h2>
+                            <p className="text-gray-500 text-lg">
+                                Master organizational design and EOS methodology with our expert-curated articles.
+                            </p>
+                        </div>
+                        <Link to="/resources">
+                            <Button variant="outline" className="rounded-full px-6">
+                                View All Resources <ArrowRight className="ml-2 w-4 h-4" />
+                            </Button>
+                        </Link>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-8">
+                        <div className="group cursor-pointer">
+                            <div className="aspect-video bg-gray-100 rounded-2xl mb-6 overflow-hidden border border-gray-100 group-hover:border-brand-blue/20 transition-all">
+                                <div className="w-full h-full bg-gradient-to-br from-brand-blue/5 to-purple-500/5 flex items-center justify-center">
+                                    <Bot className="w-12 h-12 text-brand-blue opacity-20" />
+                                </div>
+                            </div>
+                            <span className="text-xs font-bold text-brand-blue uppercase tracking-wider">Organization Design</span>
+                            <h3 className="text-xl font-bold text-gray-900 mt-2 mb-3 group-hover:text-brand-blue transition-colors">Why Accountability Charts Are Not Job Descriptions</h3>
+                            <p className="text-gray-500 text-sm line-clamp-2">Organizations often mix up tools that look similar but serve very different purposes...</p>
+                        </div>
+                        <div className="group cursor-pointer">
+                            <div className="aspect-video bg-gray-100 rounded-2xl mb-6 overflow-hidden border border-gray-100 group-hover:border-brand-blue/20 transition-all">
+                                <div className="w-full h-full bg-gradient-to-br from-purple-500/5 to-brand-blue/5 flex items-center justify-center">
+                                    <Users className="w-12 h-12 text-purple-500 opacity-20" />
+                                </div>
+                            </div>
+                            <span className="text-xs font-bold text-brand-blue uppercase tracking-wider">Leadership</span>
+                            <h3 className="text-xl font-bold text-gray-900 mt-2 mb-3 group-hover:text-brand-blue transition-colors">Seats, Not People: The EOS Way</h3>
+                            <p className="text-gray-500 text-sm line-clamp-2">Design your organization around seats (outcome bundles) rather than individuals...</p>
+                        </div>
+                        <div className="group cursor-pointer">
+                            <div className="aspect-video bg-gray-100 rounded-2xl mb-6 overflow-hidden border border-gray-100 group-hover:border-brand-blue/20 transition-all">
+                                <div className="w-full h-full bg-gradient-to-br from-green-500/5 to-brand-blue/5 flex items-center justify-center">
+                                    <TrendingUp className="w-12 h-12 text-green-500 opacity-20" />
+                                </div>
+                            </div>
+                            <span className="text-xs font-bold text-brand-blue uppercase tracking-wider">HR Management</span>
+                            <h3 className="text-xl font-bold text-gray-900 mt-2 mb-3 group-hover:text-brand-blue transition-colors">Working Best Together</h3>
+                            <p className="text-gray-500 text-sm line-clamp-2">How EOS Accountability Charts and Job Specs can be integrated for maximum impact...</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Pricing Section */}
-            <section id="pricing" className="py-24 bg-white">
+            <section id="pricing" className="py-24 bg-gray-50">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="text-center mb-16">
                         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Simple, transparent pricing</h2>
@@ -179,7 +232,7 @@ export default function LandingPage() {
                     </div>
 
                     <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-                        {/* Starter */}
+                        {/* Starter Plan */}
                         <Card className="p-8 border border-gray-100 hover:border-brand-blue/30 transition-all hover:shadow-darwin-lg relative bg-white">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Starter</h3>
                             <p className="text-gray-500 text-sm mb-6">For small teams getting started.</p>
@@ -199,11 +252,11 @@ export default function LandingPage() {
                                 </li>
                             </ul>
                             <Link to="/checkout?plan=starter">
-                                <Button variant="outline" className="w-full">Start Free Trial</Button>
+                                <Button variant="outline" className="w-full font-bold">Start Free Trial</Button>
                             </Link>
                         </Card>
 
-                        {/* Growth */}
+                        {/* Growth Plan */}
                         <Card className="p-8 border-2 border-brand-blue shadow-darwin-lg relative transform md:-translate-y-4 bg-white">
                             <div className="absolute top-0 right-0 bg-brand-blue text-white text-xs font-bold px-3 py-1 rounded-bl-lg">POPULAR</div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Growth</h3>
@@ -227,11 +280,11 @@ export default function LandingPage() {
                                 </li>
                             </ul>
                             <Link to="/checkout?plan=growth">
-                                <Button variant="primary" className="w-full shadow-lg shadow-blue-500/20">Get Started</Button>
+                                <Button variant="primary" className="w-full font-bold shadow-lg shadow-blue-500/20">Get Started</Button>
                             </Link>
                         </Card>
 
-                        {/* Business */}
+                        {/* Business Plan */}
                         <Card className="p-8 border border-gray-100 hover:border-brand-blue/30 transition-all hover:shadow-darwin-lg bg-white">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Business</h3>
                             <p className="text-gray-500 text-sm mb-6">For established companies.</p>
@@ -252,7 +305,7 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> SSO / SAML
                                 </li>
                             </ul>
-                            <Button variant="outline" className="w-full" onClick={() => window.location.href = 'mailto:sales@peopleanalyzer.ai'}>Contact Sales</Button>
+                            <Button variant="outline" className="w-full font-bold" onClick={() => window.location.href = 'mailto:sales@peopleanalyzer.ai'}>Contact Sales</Button>
                         </Card>
                     </div>
                 </div>

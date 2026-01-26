@@ -6,7 +6,9 @@ import {
     LogOut,
     UserCircle,
     ClipboardList,
-    Network
+    Network,
+    BookOpen,
+    MessageSquare
 } from 'lucide-react';
 import logo from '../assets/logo.png';
 import Logo from './ui/Logo';
@@ -62,6 +64,13 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
                 )}
 
                 <NavItem
+                    icon={MessageSquare}
+                    label="Feedback (Manager)"
+                    active={activeTab === 'feedback'}
+                    onClick={() => onTabChange('feedback')}
+                />
+
+                <NavItem
                     icon={ClipboardList}
                     label="Evaluation"
                     active={activeTab === 'evaluation'}
@@ -76,6 +85,13 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
                         onClick={() => onTabChange('accountability')}
                     />
                 )}
+
+                <NavItem
+                    icon={BookOpen}
+                    label="Resources"
+                    active={activeTab === 'resources'}
+                    onClick={() => onTabChange('resources')}
+                />
 
                 {hasPermission(currentUser, PERMISSIONS.MANAGE_CORE_VALUES) && (
                     <NavItem

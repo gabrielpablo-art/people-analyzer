@@ -1,0 +1,50 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function isImageFile() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    function isValidSize(maxSizeMB) {
+      return request.resource.size < maxSizeMB * 1024 * 1024;
+    }
+    
+    // Default: Deny all
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+    
+    // User uploads - users can only access their own files
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidSize(10); // 10MB max
+    }
+    
+    // User avatars - public read, owner write
+    match /avatars/{userId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isImageFile() && 
+                     isValidSize(5); // 5MB max
+    }
+    
+    // Public assets
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if false; // Only via Admin SDK or Cloud Functions
+    }
+  }
+}

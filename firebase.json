@@ -11,10 +11,56 @@
                 "source": "**",
                 "destination": "/index.html"
             }
+        ],
+        "headers": [
+            {
+                "source": "**/*.@(jpg|jpeg|gif|png|svg|webp|avif)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
+                "source": "**/*.@(js|css)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
+                "source": "**/*.@(woff|woff2|ttf|otf)",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "max-age=31536000, immutable"
+                    }
+                ]
+            },
+            {
+                "source": "/index.html",
+                "headers": [
+                    {
+                        "key": "Cache-Control",
+                        "value": "no-cache, no-store, must-revalidate"
+                    }
+                ]
+            }
+        ],
+        "cleanUrls": true,
+        "trailingSlash": false,
+        "predeploy": [
+            "npm run build"
         ]
     },
     "firestore": {
         "rules": "firestore.rules",
         "indexes": "firestore.indexes.json"
+    },
+    "storage": {
+        "rules": "storage.rules"
     }
 }

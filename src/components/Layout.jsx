@@ -12,12 +12,14 @@ export const Layout = ({ activeTab, onTabChange, children }) => {
                         <h2 className="text-2xl font-bold text-gray-900 capitalize">
                             {activeTab === 'admin' ? 'RRHH Management' :
                                 activeTab === 'accountability' ? 'Accountability Chart' :
-                                    activeTab}
+                                    activeTab === 'feedback' ? 'Feedback Manager' :
+                                        activeTab}
                         </h2>
                         <p className="text-gray-500 text-sm mt-1">
                             {activeTab === 'dashboard' && 'Overview of your team performance and EOS bar.'}
                             {activeTab === 'admin' && 'Manage employees, hierarchy and evaluation cycles.'}
                             {activeTab === 'evaluation' && 'Complete your pending evaluations.'}
+                            {activeTab === 'feedback' && 'Manage team feedback, reviews and growth.'}
                         </p>
                     </div>
 
