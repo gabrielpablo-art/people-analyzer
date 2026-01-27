@@ -7,9 +7,14 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Users collection
+    // Users collection - Relaxed for MVP to allow Admins to create users
     match /users/{userId} {
-      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+      allow read, write: if isAuthenticated();
+    }
+
+    // Invitations collection
+    match /invitations/{inviteId} {
+      allow read, write: if isAuthenticated();
     }
     
     // Organizations
