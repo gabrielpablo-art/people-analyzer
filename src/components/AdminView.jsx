@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Card } from './Card';
-import { Plus, Mail, ChevronRight, X, Upload } from 'lucide-react';
+import { Plus, Mail, ChevronRight, X, Upload, AlertCircle, Copy, Check, MoreHorizontal, Trash2 } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
 
-export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) => {
+export const AdminView = ({ employees, onAddEmployee, onUpdateEmployee, onDeleteEmployee, onLaunch, coreValues, organizationalRoles, currentUser }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [mode, setMode] = useState('single'); // 'single' | 'bulk'
     const [bulkData, setBulkData] = useState('');
+    const [editingId, setEditingId] = useState(null);
+    const [activeMenu, setActiveMenu] = useState(null);
+    const [copiedToken, setCopiedToken] = useState(null);
     const [newEmployee, setNewEmployee] = useState({
         name: '',
         lastName: '',
@@ -17,23 +20,36 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
         responsibilities: '', // New field
     });
 
-    const handleSubmit = (e) => {
+    const canManage = hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES);
+
+    const handleSubmit = async (e) => {
+        // ... (rest of handleSubmit unchanged, assuming it's only called if modal matches)
         e.preventDefault();
 
         if (mode === 'single') {
             const fullName = `${newEmployee.name} ${newEmployee.lastName}`.trim();
-            onAddEmployee({
+            const employeeData = {
                 ...newEmployee,
                 name: fullName,
-                values: coreValues.map(() => '+'),
-                gwc: ['Y', 'Y', 'Y'],
-                status: 'Ready',
-                rating: 'The Right Person',
-                photo: null,
+                // Only set defaults for NEW employees, preserve existing for updates
+                ...(editingId ? {} : {
+                    values: coreValues.map(() => '+'),
+                    gwc: ['Y', 'Y', 'Y'],
+                    status: 'Ready',
+                    rating: 'The Right Person',
+                    photo: null
+                }),
                 responsibilities: newEmployee.responsibilities.split('\n').filter(r => r.trim() !== '')
-            });
-            // Show toast simulation
-            alert(`Invitation sent to ${newEmployee.email}`);
+            };
+
+            if (editingId) {
+                await onUpdateEmployee(editingId, employeeData);
+                alert(`Employee updated successfully`);
+            } else {
+                onAddEmployee(employeeData);
+                alert(`Invitation sent to ${newEmployee.email}`);
+            }
+
         } else {
             // Parse Bulk Data
             const lines = bulkData.trim().split('\n');
@@ -62,10 +78,39 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
             }
         }
 
+        closeModal();
+    };
+
+    const handleEditClick = (emp) => {
+        const [firstName, ...lastNameParts] = (emp.name || '').split(' ');
+        setEditingId(emp.id);
+        setNewEmployee({
+            name: firstName || '',
+            lastName: lastNameParts.join(' ') || '',
+            email: emp.email || '',
+            role: emp.role || '',
+            manager: emp.manager || '',
+            systemRole: emp.systemRole || 'employee',
+            responsibilities: Array.isArray(emp.responsibilities) ? emp.responsibilities.join('\n') : (emp.responsibilities || '')
+        });
+        setMode('single');
+        setIsModalOpen(true);
+    };
+
+    const closeModal = () => {
         setIsModalOpen(false);
+        setEditingId(null);
         setNewEmployee({ name: '', lastName: '', email: '', role: '', manager: '', systemRole: 'employee', responsibilities: '' });
         setBulkData('');
         setMode('single');
+    };
+
+    const handleCopyLink = (token) => {
+        const link = `${window.location.origin}/accept-invite?token=${token}`;
+        navigator.clipboard.writeText(link);
+        setCopiedToken(token);
+        setTimeout(() => setCopiedToken(null), 2000);
+        setActiveMenu(null);
     };
 
     return (
@@ -75,34 +120,36 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                     <h3 className="text-lg font-bold text-gray-900">Manage People</h3>
                     <p className="text-sm text-gray-500">Define your organization and evaluation hierarchy.</p>
                 </div>
-                <div className="flex gap-3">
-                    <button
-                        onClick={() => setIsModalOpen(true)}
-                        className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
-                    >
-                        <Plus size={18} />
-                        Add Employee
-                    </button>
-                    <button
-                        onClick={onLaunch}
-                        className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-brand-blue/20"
-                    >
-                        <Mail size={18} />
-                        Launch Cycle
-                    </button>
-                </div>
+                {canManage && (
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+                        >
+                            <Plus size={18} />
+                            Add Employee
+                        </button>
+                        <button
+                            onClick={onLaunch}
+                            className="flex items-center gap-2 px-4 py-2 bg-brand-blue text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-brand-blue/20"
+                        >
+                            <Mail size={18} />
+                            Launch Cycle
+                        </button>
+                    </div>
+                )}
             </div>
 
-            <Card className="p-0 overflow-hidden">
+            <Card className="p-0 overflow-visible">
                 <table className="w-full text-left border-collapse">
                     <thead className="bg-gray-50/50 border-b border-gray-100">
                         <tr>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Employee</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider rounded-tl-xl">Employee</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">System Role</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Manager</th>
                             <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Action</th>
+                            {canManage && <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right rounded-tr-xl">Action</th>}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-50">
@@ -113,7 +160,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                         <div className="w-8 h-8 rounded-full bg-blue-50 text-brand-blue flex items-center justify-center font-bold text-xs">
                                             {emp.name ? emp.name.split(' ').map(n => n[0]).join('') : '?'}
                                         </div>
-                                        <span className="font-semibold text-sm text-gray-900">{emp.name || 'Unknown'}</span>
+                                        <span className="font-semibold text-sm text-gray-900">{emp.name || emp.email || 'Unknown'}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600">{emp.role}</td>
@@ -129,11 +176,43 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                         {emp.status}
                                     </span>
                                 </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button className="text-gray-400 hover:text-brand-blue transition-colors">
-                                        <ChevronRight size={20} />
-                                    </button>
-                                </td>
+                                {canManage && (
+                                    <td className="px-6 py-4 text-right relative">
+                                        <button
+                                            onClick={() => setActiveMenu(activeMenu === emp.id ? null : emp.id)}
+                                            className="text-gray-400 hover:text-brand-blue transition-colors p-2 hover:bg-gray-50 rounded-lg"
+                                        >
+                                            <MoreHorizontal size={20} />
+                                        </button>
+
+                                        {activeMenu === emp.id && (
+                                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                {emp.status === 'Pending' && emp.token && (
+                                                    <button
+                                                        onClick={() => handleCopyLink(emp.token)}
+                                                        className="w-full text-left px-4 py-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                                                    >
+                                                        {copiedToken === emp.token ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
+                                                        Copy Invite Link
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => { handleEditClick(emp); setActiveMenu(null); }}
+                                                    className="w-full text-left px-4 py-3 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                                                >
+                                                    Edit Roles
+                                                </button>
+                                                <div className="h-px bg-gray-100 my-0"></div>
+                                                <button
+                                                    className="w-full text-left px-4 py-3 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                                    onClick={() => { setActiveMenu(null); onDeleteEmployee(emp); }}
+                                                >
+                                                    <Trash2 size={14} /> Remove User
+                                                </button>
+                                            </div>
+                                        )}
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -146,7 +225,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                     <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h3 className="text-lg font-bold text-gray-900">Add New Employee</h3>
+                                <h3 className="text-lg font-bold text-gray-900">{editingId ? 'Edit Employee' : 'Add New Employee'}</h3>
                                 <div className="flex gap-4 mt-2 text-sm">
                                     <button
                                         className={`pb-1 ${mode === 'single' ? 'text-brand-blue border-b-2 border-brand-blue font-semibold' : 'text-gray-500'}`}
@@ -162,7 +241,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                     </button>
                                 </div>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                                 <X size={20} />
                             </button>
                         </div>
@@ -272,7 +351,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                             <div className="pt-4 flex justify-end gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={closeModal}
                                     className="px-4 py-2 text-sm font-bold text-gray-500 hover:bg-gray-50 rounded-xl transition-colors"
                                 >
                                     Cancel
@@ -281,7 +360,7 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                     type="submit"
                                     className="px-6 py-2 bg-brand-blue text-white text-sm font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-brand-blue/20 transition-colors"
                                 >
-                                    {mode === 'single' ? 'Send Invitation' : 'Import Employees'}
+                                    {mode === 'single' ? (editingId ? 'Update Employee' : 'Send Invitation') : 'Import Employees'}
                                 </button>
                             </div>
                         </form>

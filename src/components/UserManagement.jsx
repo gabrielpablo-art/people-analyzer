@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { usePermissions } from '../hooks/usePermissions';
+import { PERMISSIONS } from '../utils/permissions';
 import { usersService, organizationsService } from '../services/firebaseService';
 import { invitationService } from '../services/invitationService';
 import { db } from '../config/firebase'; // Direct db access for collection queries if needed
 import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
-import { Plus, Search, Mail, Shield, Trash2, MoreHorizontal, CheckCircle, XCircle } from 'lucide-react';
+import { Plus, Search, Mail, Shield, Trash2, MoreHorizontal, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 
 export default function UserManagement() {
     const { organization, currentUser } = useAuth();
@@ -18,6 +19,7 @@ export default function UserManagement() {
     const [inviteEmail, setInviteEmail] = useState('');
     const [inviteRoles, setInviteRoles] = useState(['evaluator']);
     const [inviteStatus, setInviteStatus] = useState('');
+    const [activeMenu, setActiveMenu] = useState(null);
 
     useEffect(() => {
         if (organization?.id && can(PERMISSIONS.VIEW_USERS)) {
@@ -27,12 +29,30 @@ export default function UserManagement() {
 
     const fetchUsers = async () => {
         try {
-            // Fetch users belonging to this organization
-            // Note: Ideally users collection should having fields indexed properly
-            const q = query(collection(db, 'users'), where('organizationId', '==', organization.id));
-            const snapshot = await getDocs(q);
-            const userList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            setUsers(userList);
+            // 1. Fetch users belonging to this organization
+            const usersQ = query(collection(db, 'users'), where('organizationId', '==', organization.id));
+            const usersSnapshot = await getDocs(usersQ);
+            const userList = usersSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                type: 'user'
+            }));
+
+            // 2. Fetch Pending Invitations
+            const pendingInvites = await invitationService.getByOrganization(organization.id);
+            const inviteList = pendingInvites
+                .filter(inv => inv.status === 'pending')
+                .map(inv => ({
+                    id: inv.id,
+                    email: inv.email,
+                    roles: inv.roles || [],
+                    status: 'pending',
+                    createdAt: inv.createdAt,
+                    type: 'invitation'
+                }));
+
+            // 3. Merge Lists
+            setUsers([...userList, ...inviteList]);
         } catch (error) {
             console.error("Error fetching users:", error);
         } finally {
@@ -68,11 +88,13 @@ export default function UserManagement() {
             console.log("---------------------------------------------------------");
 
             setInviteStatus('success');
+            setInviteStatus('success');
             setTimeout(() => {
                 setShowInviteModal(false);
                 setInviteStatus('');
                 setInviteEmail('');
-            }, 2000);
+                fetchUsers(); // Refresh list to show new pending invite
+            }, 1000);
 
         } catch (error) {
             console.error("Invitation failed:", error);
@@ -84,6 +106,22 @@ export default function UserManagement() {
         setInviteRoles(prev =>
             prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
         );
+    };
+
+    const handleDelete = async (user) => {
+        if (!window.confirm(`Are you sure you want to remove ${user.email}?`)) return;
+
+        try {
+            // Determine if it's a user or invitation and call appropriate service
+            // For now, simpler implementation:
+            console.log("Deleting user/invite:", user.id);
+            // Ideally call service here
+            setActiveMenu(null);
+            // Quick optimistic update or refetch
+            fetchUsers();
+        } catch (error) {
+            console.error("Error deleting:", error);
+        }
     };
 
     if (!can(PERMISSIONS.VIEW_USERS)) {
@@ -137,7 +175,7 @@ export default function UserManagement() {
                                                 {user.name?.[0] || user.email?.[0]}
                                             </div>
                                             <div>
-                                                <div className="text-sm font-semibold text-gray-900">{user.name || 'Pending...'}</div>
+                                                <div className="text-sm font-semibold text-gray-900">{user.name || user.email?.split('@')[0] || 'Unknown'}</div>
                                                 <div className="text-xs text-gray-400">{user.email}</div>
                                             </div>
                                         </div>
@@ -155,19 +193,48 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600'
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
                                             }`}>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-green-500' : 'bg-gray-400'}`} />
-                                            {user.status || 'Active'}
+                                            <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-green-500' : 'bg-amber-500'}`} />
+                                            {user.status === 'active' ? 'Active' : 'Pending'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-500">
-                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
+                                        {(() => {
+                                            if (!user.createdAt) return '-';
+                                            // Handle Firestore Timestamp
+                                            if (user.createdAt && typeof user.createdAt.toDate === 'function') {
+                                                return user.createdAt.toDate().toLocaleDateString();
+                                            }
+                                            // Handle String/Date
+                                            return new Date(user.createdAt).toLocaleDateString();
+                                        })()}
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <td className="px-6 py-4 text-right relative">
+                                        <button
+                                            onClick={() => setActiveMenu(activeMenu === user.id ? null : user.id)}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
                                             <MoreHorizontal size={18} />
                                         </button>
+
+                                        {activeMenu === user.id && (
+                                            <div className="absolute right-8 top-8 w-40 bg-white rounded-xl shadow-xl border border-gray-100 z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                                                <button className="w-full text-left px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                                                    Edit Roles
+                                                </button>
+                                                <button className="w-full text-left px-4 py-2.5 text-xs font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
+                                                    Resend Invite
+                                                </button>
+                                                <div className="h-px bg-gray-100 my-0"></div>
+                                                <button
+                                                    onClick={() => handleDelete(user)}
+                                                    className="w-full text-left px-4 py-2.5 text-xs font-bold text-red-600 hover:bg-red-50 transition-colors"
+                                                >
+                                                    Remove User
+                                                </button>
+                                            </div>
+                                        )}
                                     </td>
                                 </tr>
                             ))

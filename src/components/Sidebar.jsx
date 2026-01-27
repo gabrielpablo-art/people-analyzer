@@ -63,19 +63,10 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
                     onClick={() => onTabChange('dashboard')}
                 />
 
-                {hasPermission(currentUser, PERMISSIONS.VIEW_USERS) && (
+                {(hasPermission(currentUser, PERMISSIONS.VIEW_USERS) || hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES)) && (
                     <NavItem
                         icon={Users}
-                        label="Team"
-                        active={activeTab === 'team'}
-                        onClick={() => onTabChange('team')}
-                    />
-                )}
-
-                {hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) && (
-                    <NavItem
-                        icon={Settings}
-                        label="Admin (RRHH)"
+                        label="Team Management"
                         active={activeTab === 'admin'}
                         onClick={() => onTabChange('admin')}
                     />

@@ -9,7 +9,8 @@ import {
     updateDoc,
     doc,
     serverTimestamp,
-    getDoc
+    getDoc,
+    deleteDoc
 } from 'firebase/firestore';
 
 const COLLECTION = 'invitations';
@@ -91,5 +92,12 @@ export const invitationService = {
         const q = query(collection(db, COLLECTION), where('organizationId', '==', organizationId));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
+    /**
+     * Deletes an invitation.
+     */
+    async deleteInvitation(id) {
+        await deleteDoc(doc(db, COLLECTION, id));
     }
 };

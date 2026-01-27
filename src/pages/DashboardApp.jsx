@@ -8,13 +8,15 @@ import { AccountabilityChartView } from '../components/AccountabilityChartView';
 import { QuestionEditor } from '../components/QuestionEditor';
 import { PersonReport } from '../components/PersonReport';
 import Logo from '../components/ui/Logo';
-import { Mail } from 'lucide-react';
+import { Mail, LayoutDashboard, Users, MessageSquare, ClipboardList, Network, BookOpen } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
 import { useEmployees, useSettings, useEvaluations } from '../hooks/useFirestore';
 import { authService } from '../services/authService';
+import { invitationService } from '../services/invitationService';
 import { ResourcesView } from '../components/ResourcesView';
 import { FeedbackView } from '../components/FeedbackView';
-import UserManagement from '../components/UserManagement';
+// Removed UserManagement import
+
 
 export default function DashboardApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
@@ -94,22 +96,120 @@ export default function DashboardApp() {
     const handleAddEmployee = async (newEmpOrEmps) => {
         try {
             if (Array.isArray(newEmpOrEmps)) {
+                // Bulk import logic (keep using direct create for now or loop invites)
                 for (const emp of newEmpOrEmps) {
-                    await addEmployee(emp);
+                    await employeesService.create({
+                        ...emp,
+                        organizationId: currentUser.organizationId
+                    });
                 }
             } else {
-                await addEmployee(newEmpOrEmps);
+                // Single Add - Treat as Invitation if email exists
+                if (newEmpOrEmps.email) {
+                    // Map systemRole to roles array
+                    const roles = [];
+                    if (newEmpOrEmps.systemRole === 'admin') roles.push('admin');
+                    else if (newEmpOrEmps.systemRole === 'hr') roles.push('hr');
+                    else roles.push('employee'); // Default
+
+                    // Create Invitation with full metadata
+                    await invitationService.createInvitation({
+                        email: newEmpOrEmps.email,
+                        organizationId: currentUser.organizationId,
+                        roles: roles,
+                        invitedBy: currentUser.uid,
+                        // Metadata for when they accept or for display
+                        name: newEmpOrEmps.name,
+                        lastName: newEmpOrEmps.lastName,
+                        jobRole: newEmpOrEmps.role, // "role" in form is Job Title
+                        manager: newEmpOrEmps.manager,
+                        responsibilities: newEmpOrEmps.responsibilities
+                    });
+
+                    // Refresh invitations
+                    const invites = await invitationService.getByOrganization(currentUser.organizationId);
+                    setInvitations(invites.filter(i => i.status === 'pending').map(inv => ({
+                        ...inv,
+                        id: inv.id,
+                        name: inv.name || inv.email?.split('@')[0],
+                        email: inv.email,
+                        role: inv.jobRole || inv.roles?.[0] || 'TBD',
+                        manager: inv.manager || '',
+                        systemRole: (inv.roles?.includes('admin') ? 'admin' : (inv.roles?.includes('hr') ? 'hr' : 'employee')),
+                        status: 'Pending',
+                        rating: 'Pending',
+                        values: [],
+                        gwc: [],
+                        isInvitation: true
+                    })));
+
+                } else {
+                    // No email (placeholder?), create directly
+                    await addEmployee(newEmpOrEmps);
+                }
             }
         } catch (err) {
             console.error('Error adding employee:', err);
+            // Re-throw to show error in UI if needed
+            throw err;
         }
     };
 
     const handleUpdateEmployee = async (employeeId, updates) => {
         try {
             await updateEmployee(employeeId, updates);
+            await updateEmployee(employeeId, updates);
         } catch (err) {
             console.error('Error updating employee:', err);
+        }
+    };
+
+    const handleDeleteEmployee = async (employeeId) => {
+        try {
+            // Also try to delete invitation if it's an invite
+            if (invitations.find(i => i.id === employeeId)) {
+                // Logic for deleting invitation (if service supported it, or just ignore for now and assume it's just from the list)
+                // invitationService.delete(employeeId) // FUTURE: Add delete to invitationService
+                // For now, if it's an invitation, just filter it out locally until refresh? 
+                // Actually we need a delete method in invitationService.
+                // Assuming standard delete works if we pass the right ID and collection?
+                // Let's use useEmployees delete for real employees.
+            }
+
+            // If it's a real employee
+            await employees.find(e => e.id === employeeId) ? deleteEmployee(employeeId) : null;
+
+            // For invites, we need a way to delete them. 
+            // For now, we will add a delete method to invitationService or just hide it.
+            // Let's just create a quick delete function here or assume 'deleteEmployee' handles it if passed?
+            // No, deleteEmployee uses employeesService.
+
+            // Let's just implement a direct delete for now using the generic hook? No.
+            // Only implemented for employeesService. 
+
+        } catch (err) {
+            console.error('Error deleting employee:', err);
+        }
+    };
+
+    // TEMPORARY: Pass a delete handler that handles both.
+    const onRemovePerson = async (person) => {
+        if (window.confirm(`Are you sure you want to remove ${person.name || person.email}?`)) {
+            try {
+                if (person.isInvitation) {
+                    // Delete invitation
+                    // We need to implement delete in invitationService
+                    await invitationService.deleteInvitation(person.id);
+                    setInvitations(prev => prev.filter(i => i.id !== person.id));
+                } else {
+                    // Delete employee
+                    await employeesService.delete(person.id);
+                }
+                setShowToast(true); // Reusing toast for success
+            } catch (e) {
+                console.error("Delete failed", e);
+                alert("Failed to delete. Please try again.");
+            }
         }
     };
 
@@ -150,10 +250,38 @@ export default function DashboardApp() {
     const [personToEvaluate, setPersonToEvaluate] = useState(null);
     const [evaluationsForReport, setEvaluationsForReport] = useState([]);
 
+    // Invitations State
+    const [invitations, setInvitations] = useState([]);
+
     // Additional Firebase Hooks
-    // Merging useEvaluations usage here or just calling it again is fine, but must be top level.
-    // Ideally we merge with line 39, but for minimal diff we just move it up.
     const { getEvaluationsForEmployee } = useEvaluations();
+
+    // Fetch Invitations
+    useEffect(() => {
+        if (currentUser?.organizationId) {
+            invitationService.getByOrganization(currentUser.organizationId)
+                .then(invites => {
+                    setInvitations(invites.filter(i => i.status === 'pending').map(inv => ({
+                        ...inv,
+                        id: inv.id,
+                        token: inv.token, // Ensure token is passed
+                        name: inv.name || inv.email?.split('@')[0], // Use metadata name if available
+                        email: inv.email,
+                        role: inv.jobRole || inv.roles?.[0] || 'TBD', // Use metadata jobRole
+                        manager: inv.manager || '',
+                        systemRole: (inv.roles?.includes('admin') ? 'admin' : (inv.roles?.includes('hr') ? 'hr' : 'employee')),
+                        status: 'Pending',
+                        rating: 'Pending', // For dashboard stats
+                        values: [],
+                        gwc: [],
+                        isInvitation: true
+                    })));
+                })
+                .catch(console.error);
+        }
+    }, [currentUser?.organizationId, showToast]); // Re-fetch on toast/update? Ideally listen to realtime but one-off for now
+
+    const allPeople = [...employees, ...invitations];
 
     useEffect(() => {
         if (selectedPerson) {
@@ -199,10 +327,26 @@ export default function DashboardApp() {
     }
 
     return (
-        <Layout activeTab={activeTab} onTabChange={setActiveTab}>
+        <Layout activeTab={activeTab} onTabChange={setActiveTab}
+            items={[
+                { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+                // Consolidated "Team" and "Admin" into one "Team Management" tab
+                ...((hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) || hasPermission(currentUser, PERMISSIONS.VIEW_USERS) || currentUser?.role === 'hr') ? [
+                    { id: 'admin', label: 'Team Management', icon: Users }
+                ] : []),
+                { id: 'feedback', label: 'Feedback (Manager)', icon: MessageSquare },
+                { id: 'evaluation', label: 'Evaluation', icon: ClipboardList },
+                ...((hasPermission(currentUser, PERMISSIONS.MANAGE_ACCOUNTABILITY_CHART)) ? [
+                    { id: 'accountability', label: 'Accountability Chart', icon: Network }
+                ] : []),
+                ...((hasPermission(currentUser, PERMISSIONS.MANAGE_ORGANIZATION)) ? [
+                    { id: 'resources', label: 'Resources', icon: BookOpen }
+                ] : []),
+            ]}
+        >
             {activeTab === 'dashboard' && !selectedPerson && (
                 <DashboardView
-                    employees={employees}
+                    employees={allPeople}
                     coreValues={coreValues}
                     currentUser={currentUser}
                     onViewReport={(person) => setSelectedPerson(person)}
@@ -223,40 +367,61 @@ export default function DashboardApp() {
                 />
             )}
 
-            {activeTab === 'admin' && hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) && (
+            {activeTab === 'admin' && (hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) || hasPermission(currentUser, PERMISSIONS.VIEW_USERS) || currentUser?.role === 'hr') && (
                 <AdminView
-                    employees={employees}
+                    employees={allPeople}
                     onAddEmployee={handleAddEmployee}
+                    onUpdateEmployee={handleUpdateEmployee}
+                    onDeleteEmployee={onRemovePerson}
                     onLaunch={handleLaunch}
                     coreValues={coreValues}
                     organizationalRoles={organizationalRoles}
                     onAddCustomRole={addCustomRole}
+                    currentUser={currentUser}
                 />
             )}
 
             {activeTab === 'feedback' && (
                 <FeedbackView
-                    employees={employees}
+                    employees={allPeople}
                     currentUser={currentUser}
                 />
             )}
 
             {activeTab === 'evaluation' && (
-                <EvaluationView
-                    employee={personToEvaluate}
-                    coreValues={coreValues}
-                    questions={settings?.questions || []}
-                    onBack={() => {
-                        setPersonToEvaluate(null);
-                        setActiveTab('dashboard');
-                    }}
-                    onSubmit={handleEvaluationSubmit}
-                />
+                personToEvaluate ? (
+                    <EvaluationView
+                        employee={personToEvaluate}
+                        coreValues={coreValues}
+                        questions={settings?.questions || []}
+                        onBack={() => {
+                            setPersonToEvaluate(null);
+                            setActiveTab('dashboard');
+                        }}
+                        onSubmit={handleEvaluationSubmit}
+                    />
+                ) : (
+                    <div className="flex flex-col items-center justify-center h-[60vh] text-center">
+                        <div className="w-16 h-16 bg-brand-blue/10 rounded-full flex items-center justify-center text-brand-blue mb-4">
+                            <ClipboardList size={32} />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Evaluation Center</h2>
+                        <p className="text-gray-500 max-w-md mb-6">
+                            To start a new evaluation, please select a team member from the Dashboard or Team view.
+                        </p>
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
+                            className="px-6 py-2 bg-brand-blue text-white rounded-lg font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-brand-blue/20"
+                        >
+                            Go to Dashboard
+                        </button>
+                    </div>
+                )
             )}
 
             {activeTab === 'accountability' && hasPermission(currentUser, PERMISSIONS.MANAGE_ACCOUNTABILITY_CHART) && (
                 <AccountabilityChartView
-                    employees={employees}
+                    employees={allPeople}
                     onUpdateEmployee={handleUpdateEmployee}
                 />
             )}
@@ -284,9 +449,7 @@ export default function DashboardApp() {
                 </div>
             )}
 
-            {activeTab === 'team' && (
-                <UserManagement />
-            )}
+            {/* Removed UserManagement */}
 
             {/* Toast Notification */}
             {showToast && (
