@@ -39,6 +39,7 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
     const getRatingColor = (rating) => {
         if (rating === 'Right Employee') return 'text-brand-green bg-green-50';
         if (rating === 'Wrong Seat') return 'text-amber-600 bg-amber-50';
+        if (rating === 'Pending') return 'text-gray-500 bg-gray-100';
         return 'text-red-600 bg-red-50';
     };
 
