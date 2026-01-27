@@ -157,6 +157,15 @@ export const evaluationsService = {
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
 
+    // Get evaluations by evaluator
+    async getByEvaluator(evaluatorId) {
+        const orgId = getOrgId();
+        const evalsRef = collection(db, 'organizations', orgId, 'evaluations');
+        const q = query(evalsRef, where('evaluatorId', '==', evaluatorId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
     // Create evaluation
     async create(evaluationData) {
         const orgId = getOrgId();

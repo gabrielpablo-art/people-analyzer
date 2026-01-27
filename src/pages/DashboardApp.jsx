@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/Layout';
 import { DashboardView } from '../components/DashboardView';
 import { EvaluationView } from '../components/EvaluationView';
+import { EvaluationDashboard } from '../components/EvaluationDashboard';
 import { AdminView } from '../components/AdminView';
 import { ConfigurationView } from '../components/ConfigurationView';
 import { AccountabilityChartView } from '../components/AccountabilityChartView';
@@ -401,21 +402,14 @@ export default function DashboardApp() {
                         onSubmit={handleEvaluationSubmit}
                     />
                 ) : (
-                    <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-                        <div className="w-16 h-16 bg-brand-blue/10 rounded-full flex items-center justify-center text-brand-blue mb-4">
-                            <ClipboardList size={32} />
-                        </div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2">Evaluation Center</h2>
-                        <p className="text-gray-500 max-w-md mb-6">
-                            To start a new evaluation, please select a team member from the Dashboard or Team view.
-                        </p>
-                        <button
-                            onClick={() => setActiveTab('dashboard')}
-                            className="px-6 py-2 bg-brand-blue text-white rounded-lg font-bold hover:bg-blue-600 transition-colors shadow-lg shadow-brand-blue/20"
-                        >
-                            Go to Dashboard
-                        </button>
-                    </div>
+                    <EvaluationDashboard
+                        employees={allPeople}
+                        currentUser={currentUser}
+                        onEvaluate={(person) => {
+                            setPersonToEvaluate(person);
+                            // Stay on this tab
+                        }}
+                    />
                 )
             )}
 

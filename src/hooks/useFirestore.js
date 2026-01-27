@@ -181,12 +181,23 @@ export const useEvaluations = (employeeId = null) => {
         }
     };
 
+    const getEvaluationsByEvaluator = async (evaluatorId) => {
+        try {
+            const data = await evaluationsService.getByEvaluator(evaluatorId);
+            return data;
+        } catch (err) {
+            setError(err);
+            throw err;
+        }
+    };
+
     return {
         evaluations,
         loading,
         error,
         createEvaluation,
         submitEvaluation,
-        getEvaluationsForEmployee
+        getEvaluationsForEmployee,
+        getEvaluationsByEvaluator
     };
 };
