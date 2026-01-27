@@ -14,12 +14,24 @@ import { useEmployees, useSettings, useEvaluations } from '../hooks/useFirestore
 import { authService } from '../services/authService';
 import { ResourcesView } from '../components/ResourcesView';
 import { FeedbackView } from '../components/FeedbackView';
+import UserManagement from '../components/UserManagement';
 
 export default function DashboardApp() {
     const [activeTab, setActiveTab] = useState('dashboard');
     const [showToast, setShowToast] = useState(false);
     const [selectedPerson, setSelectedPerson] = useState(null);
-    const [currentUser, setCurrentUser] = useState(JSON.parse(localStorage.getItem('currentUser') || '{}'));
+    const getInitialUser = () => {
+        try {
+            const stored = localStorage.getItem('currentUser');
+            if (!stored || stored === 'undefined') return {};
+            return JSON.parse(stored);
+        } catch (e) {
+            console.error("Error parsing currentUser from localStorage:", e);
+            return {};
+        }
+    };
+
+    const [currentUser, setCurrentUser] = useState(getInitialUser());
 
     // Firebase Hooks
     const { employees, loading: employeesLoading, addEmployee, updateEmployee } = useEmployees();
@@ -29,8 +41,35 @@ export default function DashboardApp() {
     useEffect(() => {
         const unsubscribe = authService.onAuthStateChange((userData) => {
             if (userData) {
-                setCurrentUser(userData);
+                // Merge local data with auth data if needed
+                setCurrentUser(prev => ({ ...prev, ...userData }));
+                if (userData.uid) {
+                    // Force refresh user data from Firestore if we only have the auth part
+                    authService.usersService.getById(userData.uid).then(fullData => {
+                        if (fullData) {
+                            setCurrentUser(prev => ({ ...prev, ...fullData }));
+                            localStorage.setItem('currentUser', JSON.stringify({ ...userData, ...fullData }));
+                        }
+                    }).catch(err => console.error("Error fetching full user data:", err));
+                }
             } else {
+                // FALLBACK: Check if we have a valid local session (e.g. from Super Admin created user)
+                // This prevents redirecting if the user logged in via the local fallback mechanism
+                const localSession = localStorage.getItem('currentUser');
+                if (localSession && localSession !== 'undefined') {
+                    try {
+                        const parsedUser = JSON.parse(localSession);
+                        if (parsedUser.email) {
+                            console.log("Restoring local session for:", parsedUser.email);
+                            setCurrentUser(parsedUser);
+                            return; // Don't redirect
+                        }
+                    } catch (e) {
+                        console.error("Invalid local session", e);
+                    }
+                }
+
+                // Only redirect if NO Firebase user AND NO local session
                 window.location.href = '/login';
             }
         });
@@ -107,21 +146,23 @@ export default function DashboardApp() {
         updateSettings({ organizationalRoles: updatedRoles });
     };
 
-    if (employeesLoading || settingsLoading) {
-        return (
-            <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
-                <div className="flex flex-col items-center gap-6">
-                    <Logo iconSize="w-16 h-16" textSize="text-3xl" />
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-10 h-10 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
-                        <p className="text-gray-500 font-medium">Loading your dashboard...</p>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
+    // State for Evaluation Mode
     const [personToEvaluate, setPersonToEvaluate] = useState(null);
+    const [evaluationsForReport, setEvaluationsForReport] = useState([]);
+
+    // Additional Firebase Hooks
+    // Merging useEvaluations usage here or just calling it again is fine, but must be top level.
+    // Ideally we merge with line 39, but for minimal diff we just move it up.
+    const { getEvaluationsForEmployee } = useEvaluations();
+
+    useEffect(() => {
+        if (selectedPerson) {
+            getEvaluationsForEmployee(selectedPerson.id || selectedPerson.email)
+                .then(setEvaluationsForReport)
+                .catch(err => console.error('Error fetching evaluations:', err));
+        }
+    }, [selectedPerson]);
+
 
     const handleEvaluationSubmit = async (evalData) => {
         try {
@@ -143,16 +184,19 @@ export default function DashboardApp() {
         }
     };
 
-    const [evaluationsForReport, setEvaluationsForReport] = useState([]);
-    const { getEvaluationsForEmployee } = useEvaluations();
-
-    useEffect(() => {
-        if (selectedPerson) {
-            getEvaluationsForEmployee(selectedPerson.id || selectedPerson.email)
-                .then(setEvaluationsForReport)
-                .catch(err => console.error('Error fetching evaluations:', err));
-        }
-    }, [selectedPerson]);
+    if (employeesLoading || settingsLoading) {
+        return (
+            <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-6">
+                    <Logo iconSize="w-16 h-16" textSize="text-3xl" />
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="w-10 h-10 border-4 border-brand-blue/20 border-t-brand-blue rounded-full animate-spin" />
+                        <p className="text-gray-500 font-medium">Loading your dashboard...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <Layout activeTab={activeTab} onTabChange={setActiveTab}>
@@ -240,6 +284,10 @@ export default function DashboardApp() {
                 </div>
             )}
 
+            {activeTab === 'team' && (
+                <UserManagement />
+            )}
+
             {/* Toast Notification */}
             {showToast && (
                 <div className="fixed bottom-8 right-8 bg-gray-900 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-bottom-8 duration-300 z-50">
@@ -255,3 +303,4 @@ export default function DashboardApp() {
         </Layout>
     );
 }
+

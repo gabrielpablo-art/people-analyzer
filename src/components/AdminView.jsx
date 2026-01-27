@@ -111,9 +111,9 @@ export const AdminView = ({ employees, onAddEmployee, onLaunch, coreValues }) =>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className="w-8 h-8 rounded-full bg-blue-50 text-brand-blue flex items-center justify-center font-bold text-xs">
-                                            {emp.name.split(' ').map(n => n[0]).join('')}
+                                            {emp.name ? emp.name.split(' ').map(n => n[0]).join('') : '?'}
                                         </div>
-                                        <span className="font-semibold text-sm text-gray-900">{emp.name}</span>
+                                        <span className="font-semibold text-sm text-gray-900">{emp.name || 'Unknown'}</span>
                                     </div>
                                 </td>
                                 <td className="px-6 py-4 text-sm text-gray-600">{emp.role}</td>

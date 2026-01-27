@@ -8,16 +8,31 @@ import { Card } from '../components/ui/Card';
 export default function CheckoutPage() {
     const [searchParams] = useSearchParams();
     const navigate = useNavigate();
-    const planId = searchParams.get('plan') || 'starter';
+    const planId = searchParams.get('plan') || 'Starter';
 
     // Mock Plan Data
     const plans = {
-        starter: { name: 'Starter Plan', price: 50, period: '/month', features: ['Up to 10 Employees', 'Core Values Assessment'] },
-        growth: { name: 'Growth Plan', price: 150, period: '/month', features: ['Up to 50 Employees', 'Historical Trending'] },
-        business: { name: 'Business Plan', price: 0, period: '(Custom)', features: ['Unlimited Employees', 'API Access'] }
+        'Starter': {
+            name: 'Starter Plan',
+            price: 50,
+            period: '/month',
+            features: ['Up to 10 Employees', 'Core Values Assessment', 'Basic GWC Analysis']
+        },
+        'Growth': {
+            name: 'Growth Plan',
+            price: 150,
+            period: '/month',
+            features: ['Up to 50 Employees', 'Historical Trending', 'Advanced Filtering', 'Email Support']
+        },
+        'Business': {
+            name: 'Business Plan',
+            price: 0,
+            period: '(Custom)',
+            features: ['Unlimited Employees', 'Dedicated Success Manager', 'API Access', 'SSO / SAML']
+        }
     };
 
-    const selectedPlan = plans[planId] || plans.starter;
+    const selectedPlan = plans[planId] || plans.Starter;
 
     const [couponCode, setCouponCode] = useState('');
     const [appliedDiscount, setAppliedDiscount] = useState(0); // Percentage or fixed? User mentioned up to 100%

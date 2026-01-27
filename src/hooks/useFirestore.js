@@ -68,17 +68,30 @@ export const useEmployees = () => {
     };
 };
 
-// Hook for settings
+// Hook for settings with caching
+let settingsCache = null;
+let settingsCacheTime = null;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
 export const useSettings = () => {
-    const [settings, setSettings] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [settings, setSettings] = useState(settingsCache);
+    const [loading, setLoading] = useState(!settingsCache);
     const [error, setError] = useState(null);
 
     useEffect(() => {
         const loadSettings = async () => {
             try {
+                // Check if cache is still valid
+                if (settingsCache && settingsCacheTime && Date.now() - settingsCacheTime < CACHE_DURATION) {
+                    setSettings(settingsCache);
+                    setLoading(false);
+                    return;
+                }
+
                 setLoading(true);
                 const data = await settingsService.get();
+                settingsCache = data;
+                settingsCacheTime = Date.now();
                 setSettings(data);
                 setLoading(false);
             } catch (err) {
@@ -93,7 +106,10 @@ export const useSettings = () => {
     const updateSettings = async (updates) => {
         try {
             await settingsService.update(updates);
-            setSettings({ ...settings, ...updates });
+            const updatedSettings = { ...settings, ...updates };
+            settingsCache = updatedSettings;
+            settingsCacheTime = Date.now();
+            setSettings(updatedSettings);
         } catch (err) {
             setError(err);
             throw err;
@@ -155,11 +171,22 @@ export const useEvaluations = (employeeId = null) => {
         }
     };
 
+    const getEvaluationsForEmployee = async (employeeId) => {
+        try {
+            const data = await evaluationsService.getByEmployee(employeeId);
+            return data;
+        } catch (err) {
+            setError(err);
+            throw err;
+        }
+    };
+
     return {
         evaluations,
         loading,
         error,
         createEvaluation,
-        submitEvaluation
+        submitEvaluation,
+        getEvaluationsForEmployee
     };
 };

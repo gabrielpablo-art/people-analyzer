@@ -29,7 +29,16 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
 
 export const Sidebar = ({ activeTab, onTabChange }) => {
     const navigate = useNavigate();
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    const getSafeUser = () => {
+        try {
+            const stored = localStorage.getItem('currentUser');
+            if (!stored || stored === 'undefined') return {};
+            return JSON.parse(stored);
+        } catch (e) {
+            return {};
+        }
+    };
+    const currentUser = getSafeUser();
     const userName = currentUser.name || 'HR Manager';
     const userEmail = currentUser.email || 'admin@company.com';
     const userAvatar = currentUser.avatar;
@@ -54,9 +63,18 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
                     onClick={() => onTabChange('dashboard')}
                 />
 
-                {hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) && (
+                {hasPermission(currentUser, PERMISSIONS.VIEW_USERS) && (
                     <NavItem
                         icon={Users}
+                        label="Team"
+                        active={activeTab === 'team'}
+                        onClick={() => onTabChange('team')}
+                    />
+                )}
+
+                {hasPermission(currentUser, PERMISSIONS.MANAGE_EMPLOYEES) && (
+                    <NavItem
+                        icon={Settings}
                         label="Admin (RRHH)"
                         active={activeTab === 'admin'}
                         onClick={() => onTabChange('admin')}

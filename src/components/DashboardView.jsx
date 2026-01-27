@@ -145,17 +145,17 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                                     >
                                         <td className="px-6 py-4">
                                             <span className="font-bold text-sm text-gray-900 group-hover:text-brand-blue transition-colors">
-                                                {p.name}
+                                                {p.name || 'Unknown'}
                                             </span>
                                         </td>
-                                        {p.values.slice(0, coreValues.length).map((v, idx) => (
+                                        {(p.values || []).slice(0, coreValues.length).map((v, idx) => (
                                             <td key={idx} className={`px-4 py-4 text-center font-bold text-lg ${getValColor(v)}`}>{v}</td>
                                         ))}
-                                        {Array.from({ length: Math.max(0, coreValues.length - p.values.length) }).map((_, idx) => (
+                                        {Array.from({ length: Math.max(0, coreValues.length - (p.values?.length || 0)) }).map((_, idx) => (
                                             <td key={`empty-${idx}`} className="px-4 py-4 text-center text-gray-300">-</td>
                                         ))}
 
-                                        {p.gwc.map((g, idx) => (
+                                        {(p.gwc || []).map((g, idx) => (
                                             <td key={idx} className={`px-4 py-4 text-center font-bold text-sm ${g === 'Y' ? 'text-brand-green' : 'text-red-500'}`}>{g}</td>
                                         ))}
                                         <td className="px-6 py-4 text-right">

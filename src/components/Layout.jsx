@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Sidebar } from './Sidebar';
 
@@ -13,7 +14,8 @@ export const Layout = ({ activeTab, onTabChange, children }) => {
                             {activeTab === 'admin' ? 'RRHH Management' :
                                 activeTab === 'accountability' ? 'Accountability Chart' :
                                     activeTab === 'feedback' ? 'Feedback Manager' :
-                                        activeTab}
+                                        activeTab === 'team' ? 'Team Management' :
+                                            activeTab}
                         </h2>
                         <p className="text-gray-500 text-sm mt-1">
                             {activeTab === 'dashboard' && 'Overview of your team performance and EOS bar.'}

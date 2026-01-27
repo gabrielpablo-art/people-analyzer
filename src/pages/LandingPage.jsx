@@ -251,7 +251,7 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Basic GWC Analysis
                                 </li>
                             </ul>
-                            <Link to="/checkout?plan=starter">
+                            <Link to="/checkout?plan=Starter">
                                 <Button variant="outline" className="w-full font-bold">Start Free Trial</Button>
                             </Link>
                         </Card>
@@ -279,7 +279,7 @@ export default function LandingPage() {
                                     <CheckCircle className="w-5 h-5 text-brand-blue flex-shrink-0" /> Email Support
                                 </li>
                             </ul>
-                            <Link to="/checkout?plan=growth">
+                            <Link to="/checkout?plan=Growth">
                                 <Button variant="primary" className="w-full font-bold shadow-lg shadow-blue-500/20">Get Started</Button>
                             </Link>
                         </Card>

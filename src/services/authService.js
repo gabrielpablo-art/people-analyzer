@@ -3,60 +3,56 @@ import {
     createUserWithEmailAndPassword,
     signOut,
     onAuthStateChanged,
-    sendPasswordResetEmail
+    sendPasswordResetEmail,
+    GoogleAuthProvider,
+    signInWithPopup
 } from 'firebase/auth';
 import { auth } from '../config/firebase';
-import { usersService, settingsService } from './firebaseService';
+import { usersService, settingsService, organizationsService } from './firebaseService';
+import { invitationService } from './invitationService';
+
+const googleProvider = new GoogleAuthProvider();
 
 export const authService = {
-    // Sign in
-    async login(email, password) {
+    usersService,
+    settingsService,
+    organizationsService,
+
+    // NEW: Register new Organization (Admin)
+    async registerAdmin(email, password, userData, orgData) {
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            // Get user data from Firestore
-            const userData = await usersService.getById(user.uid);
-
-            const completeUser = {
-                uid: user.uid,
-                email: user.email,
-                ...userData
-            };
-
-            // Sync with localStorage for quick access if needed (optional, but good for backward compatibility)
-            localStorage.setItem('currentUser', JSON.stringify(completeUser));
-
-            return completeUser;
-        } catch (error) {
-            console.error('Sign in error:', error);
-            throw error;
-        }
-    },
-
-    // Register
-    async register(email, password, userData) {
-        try {
+            // 1. Create Auth User
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Generate a unique organization ID if not provided
-            const organizationId = userData.organizationId || `org_${Date.now()}`;
+            // 2. Create Organization
+            const organizationId = `org_${Date.now()}`;
+            const newOrg = {
+                name: orgData.name,
+                plan_type: orgData.plan || 'starter',
+                subscription_status: 'active', // Mocking active status for now
+                employee_limit: orgData.plan === 'starter' ? 10 : (orgData.plan === 'growth' ? 50 : null),
+                createdBy: user.uid
+            };
+            await organizationsService.create(organizationId, newOrg);
 
-            // Create user document in Firestore
+            // 3. Create User Profile (Admin)
             const completeUser = {
                 uid: user.uid,
                 email: user.email,
-                ...userData,
+                name: userData.fullName,
+                roles: ['admin', 'hr', 'evaluator'], // Admin gets all roles by default? Or just admin? Prompt says "Admin", user mentions "Access total".
                 organizationId,
+                status: 'active',
+                company: orgData.name, // Add company name for display purposes
                 createdAt: new Date().toISOString()
             };
-
             await usersService.upsert(user.uid, completeUser);
 
-            // Seed default settings for the new organization
+            // 4. Seed Default Settings
             const defaultSettings = {
-                organizationId,
+                anonymize_responses: false,
+                allow_self_evaluation: true,
                 coreValues: ['Humble', 'Hungry', 'Smart'],
                 organizationalRoles: {
                     predefined: {
@@ -65,22 +61,85 @@ export const authService = {
                         'Analysts': ['Technology Analyst', 'Finance Analyst', 'Operations Analyst', 'HR Analyst']
                     },
                     custom: []
-                },
-                questions: [
-                    { id: 1, category: 'Growth', text: 'What is one thing this person did well this quarter?' },
-                    { id: 2, category: 'Growth', text: 'What is one area where this person can improve?' },
-                    { id: 3, category: 'Support', text: 'How can I support you better in your role?' }
-                ]
+                }
+            };
+            await settingsService.update(defaultSettings, organizationId);
+
+            return completeUser;
+        } catch (error) {
+            console.error('Register Admin error:', error);
+            throw error;
+        }
+    },
+
+    // NEW: Register Invited User
+    async registerInvitedUser(email, password, token, name) {
+        try {
+            // 1. Validate Token & Get Invite Details
+            const invitation = await invitationService.validateToken(token);
+
+            // 2. Create Auth User
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            // 3. Create User Profile
+            const completeUser = {
+                uid: user.uid,
+                email: user.email,
+                name: name,
+                roles: invitation.roles || ['evaluator'],
+                organizationId: invitation.organizationId,
+                status: 'active',
+                createdAt: new Date().toISOString()
             };
 
-            await settingsService.update(defaultSettings);
+            await usersService.upsert(user.uid, completeUser);
 
-            // Sync with localStorage
+            // 4. Mark invitation as accepted
+            await invitationService.acceptInvitation(token);
+
+            // 5. Update local storage for immediate access if needed
             localStorage.setItem('currentUser', JSON.stringify(completeUser));
 
             return completeUser;
         } catch (error) {
-            console.error('Sign up error:', error);
+            console.error('Register Invited User error:', error);
+            throw error;
+        }
+    },
+
+    // Sign in
+    async login(email, password) {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            return user;
+        } catch (error) {
+            console.warn('Firebase login failed, checking local users...', error.code);
+
+            // Fallback: Check local storage for Super Admin created users
+            const localUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const localUser = localUsers.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+
+            if (localUser) {
+                console.log('Found matching local user, simulating login:', localUser.email);
+
+                // Construct a user object that mimics Firebase auth user + profile data
+                const mockUser = {
+                    uid: localUser.id || `local_${Date.now()}`,
+                    email: localUser.email,
+                    displayName: localUser.name,
+                    isAnonymous: false,
+                    ...localUser
+                };
+
+                // Save to current session
+                localStorage.setItem('currentUser', JSON.stringify(mockUser));
+                return mockUser;
+            }
+
+            // If no local user found, re-throw original error
+            console.error('Sign in error:', error);
             throw error;
         }
     },
@@ -89,7 +148,7 @@ export const authService = {
     async signOut() {
         try {
             await signOut(auth);
-            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUser'); // Legacy cleanup
         } catch (error) {
             console.error('Sign out error:', error);
             throw error;
@@ -106,20 +165,34 @@ export const authService = {
         }
     },
 
-    // Auth state observer
+    // Login with Google (Admin registration or generic login?)
+    // If used for registration, needs to know if creating Org or Joining
+    async loginWithGoogle() {
+        try {
+            const userCredential = await signInWithPopup(auth, googleProvider);
+            const user = userCredential.user;
+
+            // Fetch user profile from Firestore
+            const userData = await usersService.getById(user.uid);
+
+            const completeUser = {
+                uid: user.uid,
+                email: user.email,
+                name: user.displayName,
+                ...userData
+            };
+
+            localStorage.setItem('currentUser', JSON.stringify(completeUser));
+            return completeUser;
+        } catch (error) {
+            console.error('Google login error:', error);
+            throw error;
+        }
+    },
+
+    // Subscribe to auth state changes
     onAuthStateChange(callback) {
-        return onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userData = await usersService.getById(user.uid);
-                callback({
-                    uid: user.uid,
-                    email: user.email,
-                    ...userData
-                });
-            } else {
-                callback(null);
-            }
-        });
+        return onAuthStateChanged(auth, callback);
     },
 
     // Get current user

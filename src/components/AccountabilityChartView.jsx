@@ -9,7 +9,7 @@ const TreeNode = ({ node }) => {
                 <div className="w-12 h-12 rounded-full bg-brand-blue/10 text-brand-blue flex items-center justify-center mb-3">
                     {/* Initials or Icon */}
                     <span className="text-lg font-bold">
-                        {node.name.split(' ').map(n => n[0]).join('')}
+                        {node.name ? node.name.split(' ').map(n => n[0]).join('') : '?'}
                     </span>
                 </div>
                 <h4 className="font-bold text-gray-900 text-sm">{node.name}</h4>
@@ -17,7 +17,7 @@ const TreeNode = ({ node }) => {
 
                 {/* Stats / Mini info */}
                 <div className="w-full pt-3 border-t border-gray-50 flex justify-between text-xs text-gray-500">
-                    <span>GWC: {node.gwc.filter(x => x === 'Y').length}/3</span>
+                    <span>GWC: {(node.gwc || []).filter(x => x === 'Y').length}/3</span>
                     <span className={node.status === 'Ready' ? 'text-green-600' : 'text-amber-600'}>
                         {node.status}
                     </span>
@@ -146,7 +146,7 @@ const AccountabilityChartTree = ({ node, isFirst, isLast, hasSiblings, isRoot = 
                             <img src={node.photo} alt={node.name} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center bg-brand-blue/5 text-brand-blue font-bold text-lg">
-                                {node.name.split(' ').map(n => n[0]).join('')}
+                                {node.name ? node.name.split(' ').map(n => n[0]).join('') : '?'}
                             </div>
                         )}
                         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/photo:opacity-100 flex items-center justify-center transition-opacity">
