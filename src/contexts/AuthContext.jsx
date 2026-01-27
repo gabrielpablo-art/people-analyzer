@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
                             const orgDocRef = doc(db, 'organizations', userData.organizationId);
                             const orgDoc = await getDoc(orgDocRef);
                             if (orgDoc.exists()) {
-                                setOrganization(orgDoc.data());
+                                setOrganization({ id: orgDoc.id, ...orgDoc.data() });
                             }
                         }
                     } else {
