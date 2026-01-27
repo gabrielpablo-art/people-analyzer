@@ -45,12 +45,12 @@ export const LogoIcon = ({ className = "w-8 h-8" }) => (
 export const Logo = ({ showText = true, className = "flex items-center gap-2", iconSize = "w-8 h-8", textSize = "text-xl" }) => {
     return (
         <div className={className}>
-            <div className={`${iconSize} text-brand-blue`}>
+            <div className={`${iconSize} text-brand-blue dark:text-blue-400`}>
                 <LogoIcon />
             </div>
             {showText && (
-                <span className={`${textSize} font-bold tracking-tight text-gray-900`}>
-                    People <span className="text-gray-900">Analyzer</span>
+                <span className={`${textSize} font-bold tracking-tight text-gray-900 dark:text-white`}>
+                    People <span className="text-gray-900 dark:text-white">Analyzer</span>
                 </span>
             )}
         </div>

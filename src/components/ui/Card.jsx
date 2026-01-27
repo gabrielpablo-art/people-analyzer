@@ -7,7 +7,7 @@ export const Card = React.forwardRef(({ className, children, ...props }, ref) =>
         <div
             ref={ref}
             className={twMerge(clsx(
-                'bg-white rounded-xl shadow-darwin border border-gray-100 overflow-hidden',
+                'bg-white dark:bg-gray-800 rounded-xl shadow-darwin border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-200',
                 className
             ))}
             {...props}
@@ -37,7 +37,7 @@ export const CardTitle = React.forwardRef(({ className, children, ...props }, re
     return (
         <h3
             ref={ref}
-            className={twMerge(clsx('text-xl font-bold text-gray-900', className))}
+            className={twMerge(clsx('text-xl font-bold text-gray-900 dark:text-white', className))}
             {...props}
         >
             {children}

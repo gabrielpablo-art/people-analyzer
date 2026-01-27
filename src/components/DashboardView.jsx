@@ -52,61 +52,61 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <Card
-                    className={`flex flex-col gap-2 cursor-pointer transition-all ${filterRating === 'ALL' ? 'ring-2 ring-brand-blue shadow-lg scale-[1.02]' : 'hover:bg-gray-50'}`}
+                    className={`flex flex-col gap-2 cursor-pointer transition-all ${filterRating === 'ALL' ? 'ring-2 ring-brand-blue shadow-lg scale-[1.02]' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     onClick={() => setFilterRating('ALL')}
                 >
                     <div className="flex justify-between items-start">
-                        <span className="text-gray-500 text-sm font-medium">Total Talent</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Talent</span>
                         <Users className="text-brand-blue" size={20} />
                     </div>
-                    <span className="text-3xl font-bold text-gray-900">{stats.total}</span>
-                    <span className="text-gray-400 text-xs mt-2">Team Size</span>
+                    <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</span>
+                    <span className="text-gray-400 dark:text-gray-500 text-xs mt-2">Team Size</span>
                 </Card>
 
                 <Card
-                    className={`flex flex-col gap-2 border-l-4 border-l-brand-green cursor-pointer transition-all ${filterRating === 'RIGHT_PERSON' ? 'ring-2 ring-brand-green shadow-lg scale-[1.02]' : 'hover:bg-gray-50'}`}
+                    className={`flex flex-col gap-2 border-l-4 border-l-brand-green cursor-pointer transition-all ${filterRating === 'RIGHT_PERSON' ? 'ring-2 ring-brand-green shadow-lg scale-[1.02]' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     onClick={() => setFilterRating('RIGHT_PERSON')}
                 >
                     <div className="flex justify-between items-start">
-                        <span className="text-gray-500 text-sm font-medium">Right Person / Seat</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">Right Person / Seat</span>
                         <Target className="text-brand-green" size={20} />
                     </div>
-                    <span className="text-3 shadow-sm text-3xl font-bold text-gray-900">{stats.rightPerson}</span>
+                    <span className="text-3 shadow-sm text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.rightPerson}</span>
                     <span className="text-brand-green text-xs font-semibold mt-2">
                         {Math.round((stats.rightPerson / stats.total) * 100) || 0}% Alignment
                     </span>
                 </Card>
 
                 <Card
-                    className={`flex flex-col gap-2 border-l-4 border-l-amber-400 cursor-pointer transition-all ${filterRating === 'WRONG_SEAT' ? 'ring-2 ring-amber-400 shadow-lg scale-[1.02]' : 'hover:bg-gray-50'}`}
+                    className={`flex flex-col gap-2 border-l-4 border-l-amber-400 cursor-pointer transition-all ${filterRating === 'WRONG_SEAT' ? 'ring-2 ring-amber-400 shadow-lg scale-[1.02]' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     onClick={() => setFilterRating('WRONG_SEAT')}
                 >
                     <div className="flex justify-between items-start">
-                        <span className="text-gray-500 text-sm font-medium">Wrong Seat</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">Wrong Seat</span>
                         <TrendingUp className="text-amber-500" size={20} />
                     </div>
-                    <span className="text-3xl font-bold text-gray-900">{stats.wrongSeat}</span>
+                    <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.wrongSeat}</span>
                     <span className="text-amber-500 text-xs font-semibold mt-2">Immediate Coaching</span>
                 </Card>
 
                 <Card
-                    className={`flex flex-col gap-2 border-l-4 border-l-red-400 cursor-pointer transition-all ${filterRating === 'WRONG_PERSON' ? 'ring-2 ring-red-400 shadow-lg scale-[1.02]' : 'hover:bg-gray-50'}`}
+                    className={`flex flex-col gap-2 border-l-4 border-l-red-400 cursor-pointer transition-all ${filterRating === 'WRONG_PERSON' ? 'ring-2 ring-red-400 shadow-lg scale-[1.02]' : 'hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                     onClick={() => setFilterRating('WRONG_PERSON')}
                 >
                     <div className="flex justify-between items-start">
-                        <span className="text-gray-500 text-sm font-medium">Wrong Person</span>
+                        <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">Wrong Person</span>
                         <AlertCircle className="text-red-500" size={20} />
                     </div>
-                    <span className="text-3xl font-bold text-gray-900">{stats.wrongPerson}</span>
+                    <span className="text-3xl font-bold text-gray-900 dark:text-gray-100">{stats.wrongPerson}</span>
                     <span className="text-red-500 text-xs font-semibold mt-2">Replacement Plan</span>
                 </Card>
             </div>
 
             <Card className="p-0 overflow-hidden">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/30 dark:bg-gray-800/30">
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900">People Analyzer™ Result</h3>
-                        <p className="text-sm text-gray-500">
+                        <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">People Analyzer™ Result</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
                             {filterRating === 'ALL' ? 'Viewing all employees' :
                                 filterRating === 'RIGHT_PERSON' ? 'Viewing Right Person / Right Seat' :
                                     filterRating === 'WRONG_SEAT' ? 'Viewing employees in Wrong Seat' :
@@ -114,7 +114,7 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                         </p>
                     </div>
                     <div className="flex gap-4">
-                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-400">
+                        <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 dark:text-gray-500">
                             <span className="w-3 h-3 rounded-full bg-brand-green" /> Values Target: 3+, 2±
                         </div>
                     </div>
@@ -123,28 +123,28 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-white border-b border-gray-100">
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Name</th>
+                            <tr className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">Name</th>
                                 {coreValues.map((cv, i) => (
-                                    <th key={i} className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">{cv}</th>
+                                    <th key={i} className="px-4 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">{cv}</th>
                                 ))}
-                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">G</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">W</th>
-                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">C</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Rating Final</th>
-                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">G</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">W</th>
+                                <th className="px-4 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-center">C</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-right">Rating Final</th>
+                                <th className="px-6 py-4 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-50">
+                        <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                             {filteredEmployees.length > 0 ? (
                                 filteredEmployees.map((p, i) => (
                                     <tr
                                         key={i}
                                         onClick={() => setSelectedEmployee(p)}
-                                        className="hover:bg-gray-50/50 transition-colors cursor-pointer group"
+                                        className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer group"
                                     >
                                         <td className="px-6 py-4">
-                                            <span className="font-bold text-sm text-gray-900 group-hover:text-brand-blue transition-colors">
+                                            <span className="font-bold text-sm text-gray-900 dark:text-gray-100 group-hover:text-brand-blue transition-colors">
                                                 {p.name || 'Unknown'}
                                             </span>
                                         </td>
@@ -152,7 +152,7 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                                             <td key={idx} className={`px-4 py-4 text-center font-bold text-lg ${getValColor(v)}`}>{v}</td>
                                         ))}
                                         {Array.from({ length: Math.max(0, coreValues.length - (p.values?.length || 0)) }).map((_, idx) => (
-                                            <td key={`empty-${idx}`} className="px-4 py-4 text-center text-gray-300">-</td>
+                                            <td key={`empty-${idx}`} className="px-4 py-4 text-center text-gray-300 dark:text-gray-600">-</td>
                                         ))}
 
                                         {(p.gwc || []).map((g, idx) => (
@@ -193,13 +193,13 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan={coreValues.length + 6} className="px-6 py-8 text-center text-gray-500 text-sm">
+                                    <td colSpan={coreValues.length + 6} className="px-6 py-8 text-center text-gray-500 dark:text-gray-400 text-sm">
                                         No employees found matching this filter.
                                     </td>
                                 </tr>
                             )}
                             {/* THE BAR ROW */}
-                            <tr className="bg-brand-blue/5 border-t-2 border-brand-blue/10">
+                            <tr className="bg-brand-blue/5 dark:bg-brand-blue/10 border-t-2 border-brand-blue/10 dark:border-brand-blue/20">
                                 <td className="px-6 py-4 font-bold text-xs text-brand-blue uppercase tracking-widest italic">The Bar (Min)</td>
                                 {coreValues.map((_, i) => (
                                     <td key={i} className="px-4 py-4 text-center font-bold text-brand-blue/50 text-lg">+</td>

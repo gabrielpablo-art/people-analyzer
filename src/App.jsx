@@ -32,23 +32,25 @@ function App() {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-        <AuthProvider>
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/register" element={<RegistrationPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/app" element={<DashboardApp />} />
-              <Route path="/resources" element={<ResourcesPage />} />
-              <Route path="/checkout" element={<CheckoutPage />} />
-              <Route path="/accept-invite" element={<InvitationAcceptPage />} />
-              <Route path="/super-admin-restricted-access" element={<SuperAdminPage />} />
-              {/* Fallback route */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/register" element={<RegistrationPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/app" element={<DashboardApp />} />
+                <Route path="/resources" element={<ResourcesPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/accept-invite" element={<InvitationAcceptPage />} />
+                <Route path="/super-admin-restricted-access" element={<SuperAdminPage />} />
+                {/* Fallback route */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </AuthProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </BrowserRouter>
   );
