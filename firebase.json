@@ -51,10 +51,7 @@
             }
         ],
         "cleanUrls": true,
-        "trailingSlash": false,
-        "predeploy": [
-            "npm run build"
-        ]
+        "trailingSlash": false
     },
     "firestore": {
         "rules": "firestore.rules",
