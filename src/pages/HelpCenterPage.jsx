@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MainNav } from '../components/MainNav';
+import PublicNavbar from '../components/PublicNavbar';
 import Footer from '../components/Footer';
 import { ChevronDown, ChevronUp, Mail, MessageSquare, Phone, Send } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -95,7 +95,7 @@ export default function HelpCenterPage() {
 
     return (
         <div className="min-h-screen bg-white flex flex-col font-sans">
-            <MainNav />
+            <PublicNavbar />
 
             {/* Hero Section */}
             <div className="bg-[#0B1C33] text-white pt-32 pb-20 px-6">
