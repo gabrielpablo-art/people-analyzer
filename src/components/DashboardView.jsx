@@ -156,8 +156,12 @@ export const DashboardView = ({ employees, coreValues, currentUser, onViewReport
                                             <td key={`empty-${idx}`} className="px-4 py-4 text-center text-gray-300 dark:text-gray-600">-</td>
                                         ))}
 
-                                        {(p.gwc || []).map((g, idx) => (
-                                            <td key={idx} className={`px-4 py-4 text-center font-bold text-sm ${g === 'Y' ? 'text-brand-green' : 'text-red-500'}`}>{g}</td>
+
+                                        {(p.gwc || []).slice(0, 3).map((g, idx) => (
+                                            <td key={`gwc-${idx}`} className={`px-4 py-4 text-center font-bold text-sm ${g === 'Y' ? 'text-brand-green' : 'text-red-500'}`}>{g}</td>
+                                        ))}
+                                        {Array.from({ length: Math.max(0, 3 - (p.gwc?.length || 0)) }).map((_, idx) => (
+                                            <td key={`empty-gwc-${idx}`} className="px-4 py-4 text-center text-gray-300 dark:text-gray-600">-</td>
                                         ))}
                                         <td className="px-6 py-4 text-right">
                                             <span className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-wider ${getRatingColor(p.rating)}`}>

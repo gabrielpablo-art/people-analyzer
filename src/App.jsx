@@ -15,6 +15,11 @@ const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 const SuperAdminPage = lazy(() => import('./pages/SuperAdminPage'));
 const ResourcesPage = lazy(() => import('./pages/ResourcesPage'));
 const InvitationAcceptPage = lazy(() => import('./pages/InvitationAcceptPage'));
+const SuccessStoriesPage = lazy(() => import('./pages/SuccessStoriesPage'));
+const IndustryPage = lazy(() => import('./pages/IndustryPage'));
+const HelpCenterPage = lazy(() => import('./pages/HelpCenterPage'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfUse = lazy(() => import('./pages/TermsOfUse'));
 
 // Loading component
 const LoadingFallback = () => (
@@ -45,6 +50,11 @@ function App() {
                 <Route path="/resources" element={<ResourcesPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/accept-invite" element={<InvitationAcceptPage />} />
+                <Route path="/success-stories" element={<SuccessStoriesPage />} />
+                <Route path="/industries/:industryId" element={<IndustryPage />} />
+                <Route path="/help-center" element={<HelpCenterPage />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-use" element={<TermsOfUse />} />
                 <Route path="/super-admin-restricted-access" element={<SuperAdminPage />} />
                 {/* Fallback route */}
                 <Route path="*" element={<Navigate to="/" replace />} />

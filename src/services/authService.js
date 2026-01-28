@@ -30,8 +30,9 @@ export const authService = {
             const newOrg = {
                 name: orgData.name,
                 plan_type: orgData.plan || 'starter',
-                subscription_status: 'active', // Mocking active status for now
-                employee_limit: orgData.plan === 'starter' ? 10 : (orgData.plan === 'growth' ? 50 : null),
+                subscription_status: orgData.plan === 'free_trial' ? 'trialing' : 'active',
+                employee_limit: orgData.plan === 'free_trial' ? 10 : (orgData.plan === 'starter' ? 10 : (orgData.plan === 'growth' ? 50 : null)),
+                trial_end: orgData.plan === 'free_trial' ? new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString() : null,
                 createdBy: user.uid
             };
             await organizationsService.create(organizationId, newOrg);

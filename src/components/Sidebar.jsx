@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     BarChart3,
@@ -27,9 +28,11 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
     </button>
 );
 
-export const Sidebar = ({ activeTab, onTabChange }) => {
+export const Sidebar = ({ activeTab, onTabChange, companyDetails }) => {
     const navigate = useNavigate();
-    const getSafeUser = () => {
+
+    // Use state for user data to trigger re-renders
+    const [currentUser, setCurrentUser] = useState(() => {
         try {
             const stored = localStorage.getItem('currentUser');
             if (!stored || stored === 'undefined') return {};
@@ -37,11 +40,37 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
         } catch (e) {
             return {};
         }
-    };
-    const currentUser = getSafeUser();
+    });
+
+    useEffect(() => {
+        const handleStorageChange = () => {
+            try {
+                const stored = localStorage.getItem('currentUser');
+                if (stored && stored !== 'undefined') {
+                    setCurrentUser(JSON.parse(stored));
+                }
+            } catch (e) {
+                console.error("Error parsing user from storage", e);
+            }
+        };
+
+        // Listen for both native storage events (cross-tab) and custom events (same-tab)
+        window.addEventListener('storage', handleStorageChange);
+        // Custom event for same-tab updates not triggered by native storage event
+        // Note: dispatchEvent(new Event('storage')) in ProfilePage works, but let's be safe
+
+        // Also a custom interval check fallback just in case
+        const interval = setInterval(handleStorageChange, 2000);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            clearInterval(interval);
+        };
+    }, []);
+
     const userName = currentUser.name || 'HR Manager';
     const userEmail = currentUser.email || 'admin@company.com';
-    const userAvatar = currentUser.avatar;
+    const userAvatar = currentUser.avatar || currentUser.photoURL;
 
     const handleLogout = () => {
         // Clear session
@@ -52,7 +81,11 @@ export const Sidebar = ({ activeTab, onTabChange }) => {
     return (
         <aside className="fixed left-0 top-0 h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 flex flex-col p-6 z-30 transition-colors duration-200">
             <div className="flex items-center gap-3 mb-10 px-2">
-                <Logo iconSize="w-8 h-8" textSize="text-lg" />
+                <Logo
+                    iconSize={companyDetails?.logoUrl ? "w-12 h-12" : "w-8 h-8"}
+                    textSize="text-lg"
+                    customLogoUrl={companyDetails?.logoUrl}
+                />
             </div>
 
             <nav className="flex-1 space-y-2">

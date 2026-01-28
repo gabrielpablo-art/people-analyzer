@@ -44,7 +44,21 @@ export const EvaluationView = ({ onBack, onSubmit, employee, coreValues = ['Humb
                 </div>
                 <div className="text-right">
                     <p className="text-sm font-bold text-gray-400">Progress</p>
-                    <p className="text-2xl font-bold text-brand-blue">0%</p>
+                    <p className="text-2xl font-bold text-brand-blue">
+                        {(() => {
+                            const totalSteps =
+                                coreValues.length +
+                                3 + // GWC items count
+                                questions.length;
+
+                            const completedSteps =
+                                Object.keys(evalData.values).length +
+                                Object.keys(evalData.gwc).length +
+                                Object.keys(evalData.questions).filter(k => evalData.questions[k]?.trim()).length;
+
+                            return Math.round((completedSteps / totalSteps) * 100);
+                        })()}%
+                    </p>
                 </div>
             </header>
 

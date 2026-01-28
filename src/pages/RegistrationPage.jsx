@@ -22,6 +22,14 @@ export default function RegistrationPage() {
 
     const PLANS = [
         {
+            id: 'free_trial',
+            name: 'Free Trial',
+            price: 'Free',
+            period: '/5 days',
+            features: ['Up to 10 Employees', '5-Day Access', 'Core Values Assessment', 'Basic GWC Analysis'],
+            recommended: false
+        },
+        {
             id: 'Starter',
             name: 'Starter',
             price: '$50',
@@ -75,6 +83,12 @@ export default function RegistrationPage() {
             // For now, allow regular registration but maybe set status to pending?
             // "Si es Business: Envía solicitud a equipo de ventas + Crea cuenta en estado 'pending_business_approval'"
             // Implementing direct creation for now as per "Mock Payment" decision, but user will be Admin.
+
+            if (selectedPlan === 'free_trial') {
+                // Determine limits for free trial
+                // Set directly here or let authService handle it based on plan name
+                // We'll let authService handle the logic
+            }
 
             if (selectedPlan === 'business') {
                 // Logic for business plan could go here (e.g. skip payment mock, go to contact form)
@@ -233,7 +247,7 @@ export default function RegistrationPage() {
                                         )}
                                     </button>
                                     <p className="text-xs text-gray-400 text-center mt-3">
-                                        By clicking "Proceed", you agree to our Terms of Service and Privacy Policy.
+                                        By clicking "{selectedPlan === 'free_trial' ? 'Start Free Trial' : 'Proceed'}", you agree to our Terms of Service and Privacy Policy.
                                     </p>
                                 </div>
                             </div>

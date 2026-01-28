@@ -5,7 +5,7 @@ import NotificationBell, { NotificationPanel } from './NotificationBell';
 import ThemeToggle from './ThemeToggle';
 import { notificationService } from '../services/notificationService';
 
-export const Layout = ({ activeTab, onTabChange, children }) => {
+export const Layout = ({ activeTab, onTabChange, children, companyDetails }) => {
     const [showNotifications, setShowNotifications] = useState(false);
     const [notifications, setNotifications] = useState([]);
     const [currentUser, setCurrentUser] = useState(null);
@@ -58,12 +58,19 @@ export const Layout = ({ activeTab, onTabChange, children }) => {
 
     return (
         <div className="min-h-screen bg-surface-bg dark:bg-gray-900 flex">
-            <Sidebar activeTab={activeTab} onTabChange={onTabChange} />
+            <Sidebar activeTab={activeTab} onTabChange={onTabChange} companyDetails={companyDetails} />
 
             <main className="flex-1 ml-64 p-8 transition-all duration-300">
                 <header className="mb-10 flex items-center justify-between">
                     <div>
-                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize">
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 capitalize flex items-center gap-3">
+                            {activeTab === 'dashboard' && companyDetails?.logoUrl && (
+                                <img
+                                    src={companyDetails.logoUrl}
+                                    alt="Company Logo"
+                                    className="w-10 h-10 object-contain"
+                                />
+                            )}
                             {activeTab === 'admin' ? 'Team Management' :
                                 activeTab === 'accountability' ? 'Accountability Chart' :
                                     activeTab === 'feedback' ? 'Feedback Manager' :

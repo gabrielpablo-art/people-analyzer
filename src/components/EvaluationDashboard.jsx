@@ -69,7 +69,7 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
         // Simplified: just check if ANY evaluation exists for now. 
         // Ideal: Check "Cycle" or specific time window.
         return completedEvaluations.some(ev =>
-            (ev.employeeId === employeeId || ev.employeeId === employees.find(e => e.id === employeeId)?.email)
+            (ev.evaluatedId === employeeId || ev.evaluatedId === employees.find(e => e.id === employeeId)?.email)
             && ev.status === 'completed'
         );
     };
@@ -89,6 +89,14 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
             </div>
         );
     }
+
+    const formatDate = (dateVal) => {
+        if (!dateVal) return 'Unknown date';
+        // Handle Firestore Timestamp
+        if (dateVal.seconds) return new Date(dateVal.seconds * 1000).toLocaleDateString();
+        // Handle JS Date or String
+        return new Date(dateVal).toLocaleDateString();
+    };
 
     return (
         <div className="max-w-6xl mx-auto space-y-6">
@@ -170,9 +178,9 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
                         ) : (
                             completedEvaluations.map(evalItem => {
                                 // Find employee details
-                                // Note: evalItem.employeeId might be ID or Email.
-                                const employee = employees.find(e => e.id === evalItem.employeeId || e.email === evalItem.employeeId)
-                                    || { name: evalItem.employeeId, role: 'Unknown' }; // Fallback
+                                // Note: evalItem.evaluatedId might be ID or Email.
+                                const employee = employees.find(e => e.id === evalItem.evaluatedId || e.email === evalItem.evaluatedId)
+                                    || { name: evalItem.evaluatedId, role: 'Unknown' }; // Fallback
 
                                 return (
                                     <Card key={evalItem.id} className="hover:shadow-md transition-shadow">
@@ -184,7 +192,7 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
                                                 <div>
                                                     <h3 className="font-bold text-gray-900">{employee.name || employee.email}</h3>
                                                     <p className="text-xs text-gray-500">
-                                                        Submitted on {evalItem.submittedAt ? new Date(evalItem.submittedAt.seconds * 1000).toLocaleDateString() : 'Unknown date'}
+                                                        Submitted on {formatDate(evalItem.submittedAt)}
                                                     </p>
                                                 </div>
                                             </div>
@@ -204,7 +212,7 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
                         {receivedEvaluations.length === 0 ? (
                             <EmptyState
                                 title="No Received Evaluations"
-                                message="You haven't received any evaluations yet."
+                                message="No evaluations received yet or they are still pending."
                             />
                         ) : (
                             receivedEvaluations.map(evalItem => (
@@ -217,7 +225,7 @@ export const EvaluationDashboard = ({ employees, currentUser, onEvaluate }) => {
                                             <div>
                                                 <h3 className="font-bold text-gray-900">Performance Review</h3>
                                                 <p className="text-xs text-gray-500">
-                                                    Received on {evalItem.submittedAt ? new Date(evalItem.submittedAt.seconds * 1000).toLocaleDateString() : 'Pending'}
+                                                    Received on {formatDate(evalItem.submittedAt)}
                                                 </p>
                                             </div>
                                         </div>

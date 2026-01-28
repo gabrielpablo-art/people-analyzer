@@ -99,5 +99,16 @@ export const invitationService = {
      */
     async deleteInvitation(id) {
         await deleteDoc(doc(db, COLLECTION, id));
+    },
+
+    /**
+     * Updates an invitation.
+     */
+    async updateInvitation(id, updates) {
+        const docRef = doc(db, COLLECTION, id);
+        await updateDoc(docRef, {
+            ...updates,
+            updatedAt: serverTimestamp()
+        });
     }
 };

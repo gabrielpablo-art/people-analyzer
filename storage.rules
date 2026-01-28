@@ -31,6 +31,21 @@ service firebase.storage {
                      isOwner(userId) && 
                      isValidSize(10); // 10MB max
     }
+
+    // Profile photos - used by ProfilePage.jsx
+    match /profile_photos/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && 
+                     isOwner(userId) && 
+                     isValidSize(5); // 5MB max
+    }
+
+    // Company Logos
+    match /company_logos/{orgId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && 
+                     isValidSize(5); // 5MB max
+    }
     
     // User avatars - public read, owner write
     match /avatars/{userId} {

@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/Card';
 import { Button } from './ui/Button';
-import { Plus, X, Settings } from 'lucide-react';
+import { Plus, X, Settings, Building, Upload, Loader } from 'lucide-react';
 import { hasPermission, PERMISSIONS } from '../utils/permissions';
+import { storage } from '../config/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 export const ConfigurationView = ({
     coreValues,
@@ -12,11 +14,26 @@ export const ConfigurationView = ({
     currentUser,
     organizationalRoles,
     onAddCustomRole,
-    onRemoveCustomRole
+    onRemoveCustomRole,
+    companyDetails,
+    onUpdateOrganization
 }) => {
     const canEdit = hasPermission(currentUser, PERMISSIONS.MANAGE_CORE_VALUES);
     const [newValue, setNewValue] = useState('');
     const [newRole, setNewRole] = useState('');
+
+    // Company Details State
+    const [companyName, setCompanyName] = useState('');
+    const [logoUrl, setLogoUrl] = useState('');
+    const [isUploading, setIsUploading] = useState(false);
+
+    // Initialize state from props
+    useEffect(() => {
+        if (companyDetails) {
+            setCompanyName(companyDetails.name || '');
+            setLogoUrl(companyDetails.logoUrl || '');
+        }
+    }, [companyDetails]);
 
     const handleAdd = () => {
         if (newValue.trim()) {
@@ -32,6 +49,56 @@ export const ConfigurationView = ({
         }
     };
 
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        console.log("Starting logo upload...", file.name);
+        setIsUploading(true);
+        try {
+            // Upload to company_logos/{orgId}/{filename}
+            const orgId = companyDetails?.id || currentUser?.organizationId || 'default-org';
+            console.log("Target Org ID for storage:", orgId);
+
+            const storageRef = ref(storage, `company_logos/${orgId}/${file.name}`);
+            console.log("Uploading bytes to:", storageRef.fullPath);
+
+            const snapshot = await uploadBytes(storageRef, file);
+            console.log("Upload completed, getting download URL...", snapshot);
+
+            const downloadUrl = await getDownloadURL(storageRef);
+            console.log("Download URL received:", downloadUrl);
+
+            setLogoUrl(downloadUrl);
+            if (onUpdateOrganization) {
+                console.log("Calling onUpdateOrganization...");
+                await onUpdateOrganization({ logoUrl: downloadUrl });
+                console.log("Organization update completed.");
+            } else {
+                console.warn("onUpdateOrganization prop is missing!");
+            }
+        } catch (error) {
+            console.error("Error uploading logo:", error);
+            alert(`Failed to upload logo: ${error.message}`);
+        } finally {
+            console.log("Upload process finished, resetting state.");
+            setIsUploading(false);
+        }
+    };
+
+    const handleNameChange = (e) => {
+        setCompanyName(e.target.value);
+    };
+
+    const handleNameBlur = () => {
+        if (companyDetails && companyName !== companyDetails.name) {
+            if (onUpdateOrganization) {
+                onUpdateOrganization({ name: companyName });
+            }
+        }
+    };
+
+
     return (
         <div className="space-y-6">
             <Card className="bg-white border-0 shadow-sm">
@@ -42,6 +109,58 @@ export const ConfigurationView = ({
                     <div>
                         <h3 className="text-lg font-bold text-gray-900">Configuration</h3>
                         <p className="text-sm text-gray-500">Customize your People Analyzer parameters.</p>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Company Details Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <Building size={20} className="text-gray-400" />
+                        Company Details
+                    </CardTitle>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Configure your company branding and details.
+                    </p>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-6 max-w-xl">
+                        {/* Company Logo */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Company Logo</label>
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center overflow-hidden">
+                                    {logoUrl ? (
+                                        <img src={logoUrl} alt="Company Logo" className="w-full h-full object-contain p-1" />
+                                    ) : (
+                                        <Building size={24} className="text-gray-300" />
+                                    )}
+                                </div>
+                                <div>
+                                    <label className={`inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition-colors ${!canEdit || isUploading ? 'opacity-50 pointer-events-none' : ''}`}>
+                                        {isUploading ? <Loader size={16} className="animate-spin" /> : <Upload size={16} />}
+                                        {isUploading ? 'Uploading...' : 'Upload Logo'}
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleLogoUpload} disabled={!canEdit || isUploading} />
+                                    </label>
+                                    <p className="text-xs text-gray-400 mt-1">Recommended size: 200x200px. Max 2MB.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Company Name */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                            <input
+                                type="text"
+                                value={companyName}
+                                onChange={handleNameChange}
+                                onBlur={handleNameBlur}
+                                disabled={!canEdit}
+                                className="w-full px-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/20 focus:border-brand-blue transition-all"
+                                placeholder="Enter company name..."
+                            />
+                        </div>
                     </div>
                 </CardContent>
             </Card>
