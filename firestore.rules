@@ -1,5 +1,4 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
@@ -8,58 +7,23 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    function isAdmin() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    function isHRManager() {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'hr_manager'];
-    }
-    
-    function belongsToOrg(orgId) {
-      return isAuthenticated() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.organizationId == orgId;
-    }
-    
-    // Users collection
+    // Users collection - Relaxed for MVP to allow Admins to create users
     match /users/{userId} {
-      allow read: if isAuthenticated() && request.auth.uid == userId;
-      allow write: if isAuthenticated() && request.auth.uid == userId;
+      allow read, write: if isAuthenticated();
+    }
+
+    // Invitations collection
+    match /invitations/{inviteId} {
+      allow read, write: if isAuthenticated();
     }
     
     // Organizations
     match /organizations/{orgId} {
-      allow read: if belongsToOrg(orgId);
+      // Allow initial setup by authenticated users
+      allow read, write: if isAuthenticated();
       
-      // Settings subcollection
-      match /settings/{settingId} {
-        allow read: if belongsToOrg(orgId);
-        allow write: if belongsToOrg(orgId) && isHRManager();
-      }
-      
-      // Employees subcollection
-      match /employees/{employeeId} {
-        allow read: if belongsToOrg(orgId);
-        allow create: if belongsToOrg(orgId) && isHRManager();
-        allow update: if belongsToOrg(orgId) && isHRManager();
-        allow delete: if belongsToOrg(orgId) && isAdmin();
-      }
-      
-      // Evaluations subcollection
-      match /evaluations/{evaluationId} {
-        allow read: if belongsToOrg(orgId) && (
-          isHRManager() || 
-          request.auth.uid == resource.data.evaluatorId ||
-          request.auth.uid == resource.data.evaluatedId
-        );
-        allow create: if belongsToOrg(orgId) && isAuthenticated();
-        allow update: if belongsToOrg(orgId) && (
-          request.auth.uid == resource.data.evaluatorId ||
-          isHRManager()
-        );
-        allow delete: if belongsToOrg(orgId) && isAdmin();
+      match /{allPaths=**} {
+        allow read, write: if isAuthenticated();
       }
     }
   }

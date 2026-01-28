@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "fb-login": "firebase login",
-    "fb-deploy": "firebase deploy"
+    "fb-deploy": "npm run build && firebase deploy"
   },
   "dependencies": {
     "clsx": "^2.1.1",

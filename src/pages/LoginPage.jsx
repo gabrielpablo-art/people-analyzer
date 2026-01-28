@@ -9,10 +9,15 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [resetEmail, setResetEmail] = useState('');
+    const [resetSent, setResetSent] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+        setIsSubmitting(true);
 
         try {
             await authService.login(email, password);
@@ -26,19 +31,24 @@ export default function LoginPage() {
             } else {
                 setError('An error occurred during login. Please try again.');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    const handleUnregistered = () => {
-        // User not found flow
-        const confirmRegister = window.confirm("User not registered. would you like to view our subscription plans?");
-        if (confirmRegister) {
-            // Redirect to pricing section on landing page
-            // Using window.location.href because it's a hash link on a different page (or potentially same app)
-            // But since LandingPage is internal route '/', we can use navigate with state or just redirect
-            window.location.href = '/#pricing';
-        } else {
-            setError('User not found. Please register.');
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        setError('');
+        setIsSubmitting(true);
+
+        try {
+            await authService.resetPassword(resetEmail);
+            setResetSent(true);
+        } catch (err) {
+            console.error('Reset password error:', err);
+            setError('Error sending password reset email. Please check the email address.');
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -49,8 +59,14 @@ export default function LoginPage() {
                     <div className="flex justify-center mb-6">
                         <Logo iconSize="w-12 h-12" textSize="text-2xl" />
                     </div>
-                    <h1 className="text-2xl font-bold text-gray-900">Welcome Back</h1>
-                    <p className="text-gray-500 mt-2 text-sm">Log in to your People Analyzer account</p>
+                    <h1 className="text-2xl font-bold text-gray-900">
+                        {showForgotPassword ? 'Reset Password' : 'Welcome Back'}
+                    </h1>
+                    <p className="text-gray-500 mt-2 text-sm">
+                        {showForgotPassword
+                            ? "Enter your email to receive a password reset link."
+                            : 'Log in to your People Analyzer account'}
+                    </p>
                 </div>
 
                 {error && (
@@ -60,42 +76,110 @@ export default function LoginPage() {
                     </div>
                 )}
 
-                <form onSubmit={handleLogin} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue transition-colors"
-                            placeholder="you@company.com"
-                        />
+                {resetSent ? (
+                    <div className="text-center space-y-6">
+                        <div className="w-16 h-16 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto">
+                            <Mail size={32} />
+                        </div>
+                        <div>
+                            <p className="text-gray-900 font-bold text-lg">Check your email</p>
+                            <p className="text-gray-500 text-sm mt-1">
+                                We've sent a password reset link to <br />
+                                <strong className="text-gray-700">{resetEmail}</strong>
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => {
+                                setResetSent(false);
+                                setShowForgotPassword(false);
+                                setResetEmail('');
+                            }}
+                            className="text-brand-blue font-bold text-sm hover:underline"
+                        >
+                            Back to log in
+                        </button>
                     </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue transition-colors"
-                            placeholder="••••••••"
-                        />
-                    </div>
+                ) : showForgotPassword ? (
+                    <form onSubmit={handleForgotPassword} className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input
+                                type="email"
+                                value={resetEmail}
+                                onChange={(e) => setResetEmail(e.target.value)}
+                                required
+                                className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue transition-colors"
+                                placeholder="you@company.com"
+                            />
+                        </div>
 
-                    <button
-                        type="submit"
-                        className="w-full py-3 bg-brand-blue text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/20 hover:bg-blue-600 transition-all transform active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        <span>Log In</span>
-                        <ArrowRight size={16} />
-                    </button>
-                </form>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="w-full py-3 bg-brand-blue text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/20 hover:bg-blue-600 transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isSubmitting ? 'Sending...' : 'Send Reset Link'}
+                            {!isSubmitting && <ArrowRight size={16} />}
+                        </button>
 
-                <p className="text-center mt-8 text-xs text-gray-400">
-                    Don't have an account? <Link to="/register" className="text-brand-blue font-bold hover:underline">Sign up</Link>
-                </p>
+                        <button
+                            type="button"
+                            onClick={() => setShowForgotPassword(false)}
+                            className="w-full text-center text-sm font-bold text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                            Back to log in
+                        </button>
+                    </form>
+                ) : (
+                    <>
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue transition-colors"
+                                    placeholder="you@company.com"
+                                />
+                            </div>
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <label className="text-sm font-medium text-gray-700">Password</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowForgotPassword(true)}
+                                        className="text-xs font-bold text-brand-blue hover:underline"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-brand-blue transition-colors"
+                                    placeholder="••••••••"
+                                />
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={isSubmitting}
+                                className="w-full py-3 bg-brand-blue text-white rounded-xl text-sm font-bold shadow-lg shadow-brand-blue/20 hover:bg-blue-600 transition-all transform active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50"
+                            >
+                                <span>{isSubmitting ? 'Logging in...' : 'Log In'}</span>
+                                {!isSubmitting && <ArrowRight size={16} />}
+                            </button>
+                        </form>
+
+                        <p className="text-center mt-8 text-xs text-gray-400">
+                            Don't have an account? <Link to="/register" className="text-brand-blue font-bold hover:underline">Sign up</Link>
+                        </p>
+                    </>
+                )}
             </div>
         </div>
     );

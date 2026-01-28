@@ -13,11 +13,68 @@ import {
     addDoc
 } from 'firebase/firestore';
 import { db } from '../config/firebase';
+import { subscriptionService } from './subscriptionService';
 
 // Helper to get organization ID from current user
 const getOrgId = () => {
-    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    return user.organizationId || 'default-org';
+    try {
+        const stored = localStorage.getItem('currentUser');
+        if (!stored || stored === 'undefined') return 'default-org';
+        const user = JSON.parse(stored);
+        return user.organizationId || 'default-org';
+    } catch (e) {
+        return 'default-org';
+    }
+};
+
+// ==================== ORGANIZATIONS ====================
+
+export const organizationsService = {
+    // Get organization by ID
+    async getById(orgId) {
+        const orgRef = doc(db, 'organizations', orgId);
+        const snapshot = await getDoc(orgRef);
+        return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+    },
+
+    // Get organization by Name
+    async getByName(name) {
+        const orgsRef = collection(db, 'organizations');
+        const q = query(orgsRef, where('name', '==', name));
+        const snapshot = await getDocs(q);
+        return snapshot.empty ? null : { id: snapshot.docs[0].id, ...snapshot.docs[0].data() };
+    },
+
+    // Create organization
+    async create(orgId, orgData) {
+        const orgRef = doc(db, 'organizations', orgId);
+        await setDoc(orgRef, {
+            ...orgData,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+        return { id: orgId, ...orgData };
+    },
+
+    // Create organization with Auto ID
+    async createAutoId(orgData) {
+        const orgsRef = collection(db, 'organizations');
+        const docRef = await addDoc(orgsRef, {
+            ...orgData,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+        return { id: docRef.id, ...orgData };
+    },
+
+    // Update organization
+    async update(orgId, updates) {
+        const orgRef = doc(db, 'organizations', orgId);
+        await updateDoc(orgRef, {
+            ...updates,
+            updatedAt: serverTimestamp()
+        });
+    }
 };
 
 // ==================== EMPLOYEES ====================
@@ -100,6 +157,15 @@ export const evaluationsService = {
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     },
 
+    // Get evaluations by evaluator
+    async getByEvaluator(evaluatorId) {
+        const orgId = getOrgId();
+        const evalsRef = collection(db, 'organizations', orgId, 'evaluations');
+        const q = query(evalsRef, where('evaluatorId', '==', evaluatorId));
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    },
+
     // Create evaluation
     async create(evaluationData) {
         const orgId = getOrgId();
@@ -168,8 +234,8 @@ export const settingsService = {
     },
 
     // Update settings
-    async update(updates) {
-        const orgId = getOrgId();
+    async update(updates, explicitOrgId = null) {
+        const orgId = explicitOrgId || getOrgId();
         const settingsRef = doc(db, 'organizations', orgId, 'settings', 'config');
         await setDoc(settingsRef, {
             ...updates,
@@ -225,5 +291,7 @@ export default {
     employees: employeesService,
     evaluations: evaluationsService,
     settings: settingsService,
-    users: usersService
+    users: usersService,
+    organizations: organizationsService,
+    subscription: subscriptionService
 };
